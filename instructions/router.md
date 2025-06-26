@@ -42,16 +42,16 @@ Implement a lightweight router to:
 
 
 ### 🚫 Avoid
-❌ Parsing complex URL parameters
+- ❌ Parsing complex URL parameters
 Keep routing simple: use basic paths like #/home or #/todo
 
-❌ Rendering directly in router
+- ❌ Rendering directly in router
 Router should only invoke handlers – let them handle DOM updates or rendering
 
 
 ## 🧩 router.js – Implementation
-<pre>
-```
+
+```js
 // router.js
 
 const routes = new Map();
@@ -84,15 +84,14 @@ function handleRoute() {
 window.addEventListener("hashchange", handleRoute);
 window.addEventListener("load", handleRoute);
 
-``` </pre>
+``` 
 
 
 
 ## 🔄 Example Usage
 
 
-<pre>
-```
+```js
 
 import { addRoute, setNotFound, navigate } from './router.js';
 
@@ -107,7 +106,6 @@ setNotFound(() => console.log('404 - Page not found'));
 navigate('about'); // Will trigger the 'about' route handler
 
 ```
-</pre>
 
 
 

@@ -49,8 +49,7 @@ Prefer declarative node creation via h().
 
 ## 🧩 dom.js – Implementation
 
-<pre>
-```
+```js
 // dom.js
 
 // Create a virtual DOM node
@@ -89,20 +88,17 @@ function createElement(vnode) {
 
 // Optional: diff() function to be implemented for patching
 ```
-</pre>
 
 
 
 
 ## 🔄 Example Usage 
 
-<pre>
-```
+
+```js
 import { h, render } from './dom.js';
 const vnode = h("div", { class: "app" },
   h("h1", null, "Hello, Virtual DOM!"),
   h("p", null, "This is a simple VDOM example.")
 );
-
 ```
-</pre>

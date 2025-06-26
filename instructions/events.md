@@ -43,8 +43,8 @@ Improve performance by **delegating all event listeners** to the document level,
 
 ## 🧩 events.js – Implementation
 
-<pre>
-```
+
+```js
 // events.js
 
 const eventMap = new Map();
@@ -66,12 +66,10 @@ export function on(eventType, selector, handler) {
 }
 
 ```
-</pre>
 
 ## 🔄 Example Usage
 
-  <pre>
-  ```
+  ```js
   import { on } from './events.js';
 
 // Delegate click events on buttons with class "btn"
@@ -79,5 +77,4 @@ on('click', '.btn', (event) => {
   console.log('Button clicked:', event.target);
 });
 ```
-</pre>
 

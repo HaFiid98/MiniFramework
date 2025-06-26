@@ -14,6 +14,17 @@ Provide a simple and effective **global state management system** that:
 
 ---
 
+
+
+## 🚫 Avoid
+
+- ❌ Direct Mutation: Do not modify state directly (e.g., state.todos.push(...))
+
+- ❌ DOM Coupling: Keep state logic separate from UI logic (let render logic live elsewhere)
+
+
+---
+
 ## 📦 Key Features
 
 - 🧠 **Global State** – Centralized, shared state object
@@ -40,7 +51,7 @@ Provide a simple and effective **global state management system** that:
 
 ## 🧩 state.js – Implementation
 
-<pre> ```javascript function greet(name) { console.log(`Hello, ${name}!`); } greet('World'); ``` </pre>
+```js
 // state.js
 
 let state = {};               // Global state object
@@ -65,14 +76,8 @@ export function subscribe(listener) {
     listeners = listeners.filter((l) => l !== listener);
   };
 }
+```
 
-
----
-
-## 🚫 Avoid
-❌ Direct Mutation: Do not modify state directly (e.g., state.todos.push(...))
-
-❌ DOM Coupling: Keep state logic separate from UI logic (let render logic live elsewhere)
 
 
 
