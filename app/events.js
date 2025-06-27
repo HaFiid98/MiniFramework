@@ -1,4 +1,4 @@
-const eventHandlers = {};
+const eventHandlers = {cli};
 
 
 export function addevent(event, selector, handler) {

@@ -20,6 +20,8 @@ export function createElement(tag, attrs, ...childs) {
 
 
 export function render(vdom, container) {
+    console.log("render");
+    
   if (typeof vdom === 'function') {
     vdom = vdom();
   }
@@ -104,6 +106,7 @@ export function diff(old, newD) {
 
 
 export function patch(parent, patches, index = 0) {
+
   if (!patches.node) {
     parent.removeChild(parent.childNodes[index]);
     return;
@@ -111,9 +114,11 @@ export function patch(parent, patches, index = 0) {
 
   if (!parent.childNodes[index]) {
     parent.appendChild(render(patches.node));
+    
     return;
   }
 
+  
   if (patches.attrPatches) {
     const element = parent.childNodes[index];
     for (const [k, val] of Object.entries(patches.attrPatches)) {
@@ -124,15 +129,18 @@ export function patch(parent, patches, index = 0) {
       } else if (val === null || val === undefined) {
         element.removeAttribute(k);
       } else {
+
         element.setAttribute(k, val);
       }
     }
   }
 
   if (patches.childPatches) {
+
     const childNode = parent.childNodes[index];
     for (let i = 0; i < patches.childPatches.length; i++) {
       patch(childNode, patches.childPatches[i], i);
     }
   }
+
 }
