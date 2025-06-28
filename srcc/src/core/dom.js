@@ -1,6 +1,15 @@
+class VDom {
+  constructor(tag, attrs = {}, children = []) {
+    this.tag = tag;
+    this.attrs = attrs;
+    this.children = children;
+  }
+}
 
+
+//building virtueldomm
 export function createElement(tag, attrs, ...childs) {
-  const flatchilds = childs.reduce((acc, child) => {
+  const flatcilds = childs.reduce((acc, child) => {
     if (Array.isArray(child)) {
       return [...acc, ...child];
     }
@@ -14,34 +23,37 @@ export function createElement(tag, attrs, ...childs) {
   return {
     tag,
     attrs: attrs || {},
-    children: flatchilds
+    children: flatcilds
   };
 }
 
 
+//Turns a virtual node into a real DOM node and appends it.
 export function render(vdom, container) {
-    
+  // if a component func
   if (typeof vdom === 'function') {
     vdom = vdom();
   }
 
-  if (typeof vdom === 'string' || typeof vdom === 'number') {
-    console.log("heeeeeeeeeeeeeeeeeeeelo",container,1)
-    container.appendChild(document.createTextNode(vdom));
-    return;
-  }
+  // if a string
+  // if (typeof vdom === 'string' || typeof vdom === 'number') {
+  //   container.appendChild(document.createTextNode(vdom));
+  //   return;
+  // }
 
   if (!vdom) {
     return;
   }
-  // console.log(vdom)
 
+  // Create real DOM element
   const Rele = document.createElement(vdom.tag);
-  // console.log(Rele)
+
+  // Set attributes
   for (const [k, val] of Object.entries(vdom.attrs || {})) {
     if (k.startsWith('on') && typeof val === 'function') {
       const eventName = k.substring(2).toLowerCase();
       Rele.addEventListener(eventName, val);
+      // on(eventName,vdom.tag,val)
     } else if (k === 'className') {
       Rele.className = val;
     } else if (k === 'style' && typeof val === 'object') {
@@ -51,42 +63,38 @@ export function render(vdom, container) {
     }
   }
 
+  // Handle children (ensure we always work with an array)
   const children = Array.isArray(vdom.children) ? vdom.children : [vdom.children];
   
+  // Recursively render children
   children.forEach(child => {
     if (child !== undefined && child !== null && child !== false) {
       render(child, Rele);
     }
   });
 
+  // Append to parent
   container.appendChild(Rele);
 }
 
 
 
 export function diff(old, newD) {
-  if (!old) {
-   return { node: newD };
-
-  }
-   if (!newD) {
-
-    return { node: null };
-  }
-
+  if (!old) return { node: newD };
+  if (!newD) return { node: null };
+  
   if (typeof old === 'string' || typeof newD === 'string') {
     if (old !== newD) {
       return { node: newD };
     }
     return { node: null };
   }
-      console.log(old.tag,newD.tag)
 
   if (old.tag !== newD.tag) {
-
     return { node: newD };
   }
 
+  // Diff attrs
   const attrPatches = {};
   const allAttrs = new Set([...Object.keys(old.attrs), ...Object.keys(newD.attrs)]);
   
@@ -96,13 +104,13 @@ export function diff(old, newD) {
     }
   }
 
+  // diffing children
   const childPatches = [];
   const len = Math.max(old.children.length, newD.children.length);
   
   for (let i = 0; i < len; i++) {
     childPatches.push(diff(old.children[i], newD.children[i]));
   }
-  console.log("jjjjjjjjjjjjjjjjj")
 
   return {
     node: newD,
@@ -111,62 +119,44 @@ export function diff(old, newD) {
   };
 }
 
+
+//append changes patches to the dom
+/*Adds/removes elements
+
+Updates attributes
+
+Recursively patches children
+*/
 export function patch(parent, patches, index = 0) {
-
-  console.log("rooooooooooooooot", parent);
-
-  // console.log(patches.node,"l15415ol")
-
   if (!patches.node) {
     parent.removeChild(parent.childNodes[index]);
     return;
   }
-    // console.log(parent,"parent");
 
   if (!parent.childNodes[index]) {
-    console.log("macgfdfdfdfdi lol",patches.node,parent);
-    render(patches.node,parent);
-      
-
+    parent.appendChild(render(patches.node));
     return;
   }
-// console.log(index,parent.childNodes,"hello",index,"pathches",patches);
-  console.log(patches,"paathc")
-  if (patches.attrPatches) {
-console.log("macgi lol",index);
 
-    const element = parent.childNodes[index];
-    console.log(element,parent)
-    for (const [k, val] of Object.entries(patches.attrPatches)) {
-      if (k.startsWith('on') && typeof val === 'function') {
-        element.removeEventListener(k.substring(2).toLowerCase(), element[k]);
-        element.addEventListener(k.substring(2).toLowerCase(), val);
-        element[k] = val;
-      } else if (val === null || val === undefined) {
-        element.removeAttribute(k);
+  if (patches.attrPatches) {
+    const el = parent.childNodes[index];
+    for (const [key, value] of Object.entries(patches.attrPatches)) {
+      if (key.startsWith('on') && typeof value === 'function') {
+        el.removeEventListener(key.substring(2).toLowerCase(), el[key]);
+        el.addEventListener(key.substring(2).toLowerCase(), value);
+        el[key] = value;
+      } else if (value === null || value === undefined) {
+        el.removeAttribute(key);
       } else {
-        console.log("ittttissssss",k,val,element)
-        element.setAttribute(k, val);
+        el.setAttribute(key, value);
       }
     }
   }
 
   if (patches.childPatches) {
-
     const childNode = parent.childNodes[index];
     for (let i = 0; i < patches.childPatches.length; i++) {
-      console.log(parent.childNodes,childNode,patches.childPatches[i],"anas")
-      patch(childNode, patches.childPatches[i], i);//////hnaaaaaaaaaaaaaaaaaaaaaaaaa
+      patch(childNode, patches.childPatches[i], i);
     }
-
-    
-    return; 
-
-  }
-              console.log(patches.node,"hafid");
-
-  if (typeof patches.node === 'string' || typeof patches.node === 'number') {
-
-    parent.childNodes[index].textContent = patches.node
   }
 }

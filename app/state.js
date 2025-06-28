@@ -50,37 +50,49 @@ export function useState(initialValue){
 }
 
 class Component {
-  constructor(state , root , vdom , sub ){
+  constructor(state ,root , vdom , sub ,renderfuncs){
     this.sub = sub
     this.root = root
-    this.state = state
     // this.state.subscribe(this)
-    this.dom = vdom
+    this.renderfunc = renderfuncs
+    this.dom =  this.renderfunc()
+    // console.log(this.dom,"fjdjjaffsd")
     // this.sub = sub
     this.sub(this)
-//  render(this.dom , this.root)
+
+    render(this.dom , this.root)
+    console.log(this.root.childNodes[0], this.root.childNodes.length , "fskdjflkdsjklfjdskljfkldjsklfjdsjfldskjfkldsjfkldsjfkldsjkfklsdj")
 
 
-    this.render()
+    // this.render()
   }
 
-  render(){
-  //  this.dom =  createElement("span" , {id : this.state().count} , this.state().count)
-  render(this.dom , this.root)
-  //  this.update()
-  }
+  // render(){
+  // //  this.dom =  createElement("span" , {id : this.state().count} , this.state().count)
+  // render(this.dom , this.root)
+  // //  this.update()
+  // }
+
+
+ 
 
   update(){
+    // console.log()
+    const newVd = this.renderfunc()
 
-    const lol = diff(this.root.firstChild , createElement("span" , {id : this.state().count} , this.state().count))
-    // this.dom =  createElement("span" , {id : this.state().count} , this.state().count)
-    console.log("diiiiiiiif", lol)
+    const patches = diff(this.dom ,newVd)
+    console.log(patches,"kakakakka",this.root)
+    // console.log(patches,this.root,"fkdsljfksjdfklsd")
+    patch(this.root , patches)
 
-  //  const df = diff(this.root.fi , this.dom)
-    patch(this.root , lol)
-
+    // render(patches , this.root)
+    // render(this,this.root)
+    this.dom = newVd;
   }
 }
+
+
+
 
 // // ---- Implementation ---- //
 // const counterState = new StoreState({ count: 0 });
@@ -92,18 +104,45 @@ class Component {
 
 // console.log(countersub, counterState);
 
-
+//  function Todo(state) {
+//   console.log(state,"lollo")
+//     return {
+      
+//     }
+    
+//   }
 const [count , setCount , Subscribe , Unsub] = useState({count : 0})
+
 console.log(count , "count");
 
 // const countState = new StoreState({count : 0})
 const root = document.getElementById("root")
-console.log(root , "hkfdskjfhskdjfkhsdfk");
-const div = new Component(count , root , createElement("span" , {id : count().count} , count().count) , Subscribe)
-// countState.setState({count: 7})
 
-setCount({count:456546})
-// setCount({count:10})
+
+// console.log(root , "hkfdskjfhskdjfkhsdfk");
+const div = new Component(count , root , count().count , Subscribe,()=>createElement("div",{}, count().count))
+// console.log(div.root,"hhhhi")
+
+
+
+//  export function UpdateElement(fn){
+//   const create 
+//     return function(...args) {
+//             return fn(...args)
+            
+//   // }
+//   // }
+
+
+//   // const MemozCreate = UpdateElement(createElement)
+
+// MemozCreate()(("div", {id : count().count}, 555))
+
+// countState.setState({count: 7})
+// render(div.dom,div.root)
+// console.log(div.dom,div.root)
+// setCount({count:456546})
+setCount({count:7000})
 
 
 
