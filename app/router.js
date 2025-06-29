@@ -13,8 +13,8 @@
                 this.RenderView(this.GetCurrentPath()))
         }
         Navigate(Path) {
-            if (location.hash.slice(1) !== path) {
-                location.hash = path;
+            if (location.hash.slice(1) !== Path) {
+                location.hash = Path;
             }
         }
 
@@ -43,4 +43,4 @@
     const root = document.getElementById("root")
     console.log(HomeView());
 
-    const aa = new Router("/", HomeView, NotFoundView, root)
+    const router = new Router("/", HomeView, NotFoundView, root)
