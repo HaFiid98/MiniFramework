@@ -82,13 +82,12 @@ class Component {
     update() {
         this.stateIndex = 0
             currentComponent = this;
-
-                currentComponent = this
         const newVd = this.renderfunc()
         const patches = diff(this.dom, newVd)
         console.log('paaaatchessss', patches);
         
         patch(this.root, patches)
+        // render(patches , this.root)
         this.dom = newVd;
         currentComponent = null
     }
@@ -128,11 +127,8 @@ console.log(count() , "fsdfsdfdsfdsfsdfsdfsdfs");
             {class:"Container"},
             createElement("p", {}, count().count),
             createElement("button",{onclick:()=>{
-                
-                                console.log(count() , "couuuuunt");
-
-                SetCount(count().count+1)
-                                console.log(count() , "couuuuuuuuuuuuuuuuuunt");
+            
+                SetCount({count:count().count+1})
 
 
             }}, "increase"),
@@ -144,7 +140,7 @@ console.log(count() , "fsdfsdfdsfdsfsdfsdfsdfs");
                                     "li",
                                     {class:"listItem"},
                                     Task)))),
-            createElement("button" , {class:"button" , onclick:addevent( "click" , ".button" , ()=>{SetTodo(...Todo(),)},)}, "Tooodo")
+            createElement("button" , {class:"button" , onclick:(()=>{SetTodo([...Todo(),"dhfsdkfhkdsf"])})}, "Tooodo")
 
     
         )

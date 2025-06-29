@@ -23,6 +23,7 @@ export function render(vdom, container) {
   }
 
   if (typeof vdom === 'string' || typeof vdom === 'number') {
+    console.log(container)
     container.appendChild(document.createTextNode(vdom));
     return;
   }
@@ -34,6 +35,7 @@ export function render(vdom, container) {
   for (const [k, val] of Object.entries(vdom.attrs || {})) {
     if (k.startsWith('on') && typeof val === 'function') {
       const eventName = k.substring(2).toLowerCase();
+      
       Rele.addEventListener(eventName, val);
     } else if (k === 'className') {
       Rele.className = val;
@@ -57,7 +59,7 @@ export function render(vdom, container) {
 }
 
 export function diff(old, newD) {
-  console.log("1")
+  // console.log("1")
   if (newD == undefined) {
     return null;
   }
@@ -89,9 +91,9 @@ export function diff(old, newD) {
 
   const childPatches = [];
   const len = Math.max(old.children.length, newD.children.length);
-  console.log(len)
+  // console.log(len)
   for (let i = 0; i < len; i++) {
-    console.log(i)
+    // console.log(i)
     childPatches.push(diff(old.children[i], newD.children[i]));
   }
 
@@ -103,25 +105,18 @@ export function diff(old, newD) {
 }
 
 export function patch(parent, patches, index = 0) {
-  // console.log(patches)
-  // if (patches.node === null && !parent.childNodes[index]) {
-  //   console.log("hello")
-  //   return;
-  // }
-  if (parent.TEXT_NODE === 3){
-    console.log("hnaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" , patches);
 
-    return
-  }
+  console.log(patches,"hipp")
+
   if (!patches) {
     if (parent.childNodes[index]) {
     parent.removeChild(parent.childNodes[index]);
   }
     return;
   }
-  console.log("index: " , index  , "patches", patches);
   
   if (parent.childNodes[index] === undefined) {    
+    console.log(patches,parent)
     render(patches.node,parent);
     return;
   }
@@ -142,7 +137,7 @@ export function patch(parent, patches, index = 0) {
 
   if (patches.childPatches) {
     const childNode = parent.childNodes[index];
-    console.log(childNode, "childNode" , "patches", );
+    // console.log(childNode, "childNode" , "patches", );
     
     for (let i = 0; i < patches.childPatches.length; i++) {
       patch(childNode, patches.childPatches[i], i);
