@@ -179,7 +179,9 @@
             }
         });
 
-        
+        const filterTodo = currentPath() === "/completed" ? Todo().filter(item => item.complete === true) :
+                              currentPath() === "/active" ? Todo().filter(item => item.complete === false) : 
+                              Todo()
         return (
 
             createElement(
@@ -195,12 +197,12 @@
                     "ul",
                     { class: "list" },
                     ( 
-                        (Todo()).map(Task => 
+                        filterTodo.map(Task => 
 
                         {  
                                   console.log(Task , "taaaaaaaaask")
                             return createElement("li", { class: "listItem" }, Task.content,
-                        createElement("input", { type: "checkbox", 'data-checked': "checked" , checked : Task.complete , 'data-id': Task.id }))}
+                        createElement("input", { type: "checkbox", 'data-checked': "checked" , 'data-id': Task.id }))}
                     
                     
                     ))
