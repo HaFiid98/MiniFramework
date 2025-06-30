@@ -44,4 +44,4 @@
         return ` <div>404</div>`
     }
     const root = document.getElementById("root")
-    console.log(HomeView());
+    // console.log(HomeView());

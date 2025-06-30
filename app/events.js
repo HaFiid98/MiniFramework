@@ -10,7 +10,7 @@ export function addevent(event, selector, handler) {
         if (e.target.matches(selector)) {
           handler(e);
           // e.stopImmediatePropagation()
-          console.log('Delegated handler triggered', e.target);
+          // console.log('Delegated handler triggered', e.target);
           break
 
         }

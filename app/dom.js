@@ -1,6 +1,6 @@
 import { addevent, delevent } from "./events.js";
 
-export function createElement(tag, attrs, ...childs) {
+export function createElement(tag, attrs , ...childs) {
   const flatchilds = childs.flat(Infinity)
 
   const checkedchilds = flatchilds.filter(
