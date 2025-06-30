@@ -1,11 +1,10 @@
     export class Router {
-        constructor(DefaultPath, DefaultView, NotFoundView, root) {
+        constructor(DefaultPath, DefaultView, NotFoundView, root ) {
             this.root = root
             this.routes = new Map()
             this.AddPath(DefaultPath, DefaultView)
             this.AddPath(404, NotFoundView)
             this.ListenTohash()
-            this.Navigate(Path) 
             this.RenderView(this.GetCurrentPath())
 
         }
@@ -21,9 +20,23 @@
         }
 
         RenderView(Path) {
-            const viewFn = this.routes.get(Path) || this.routes.get(404);
+            console.log(Path);
+            console.log(this.routes);
             
-            this.root.innerHTML = viewFn();
+            const viewFn = this.routes.get(Path) || this.routes.get(404);
+            // console.log("heeelo" ,viewFn);
+   
+            
+            // if (typeof viewFn === "function" ){
+
+            //     this.root.innerHTML = viewFn();
+            // }else{
+        // }
+
+            this.root.innerHTML = ""
+            console.log(viewFn , "thiiiiiiiiis vuewwwwww");
+            
+            viewFn.render()
         }
 
         AddPath(Path, View) {
@@ -43,5 +56,5 @@
     function NotFoundView() {
         return ` <div>404</div>`
     }
-    const root = document.getElementById("root")
-    console.log(HomeView());
+    // const root = document.getElementById("root")
+    // console.log(HomeView());
