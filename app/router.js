@@ -1,11 +1,13 @@
-    class Router {
+    export class Router {
         constructor(DefaultPath, DefaultView, NotFoundView, root) {
             this.root = root
             this.routes = new Map()
             this.AddPath(DefaultPath, DefaultView)
             this.AddPath(404, NotFoundView)
             this.ListenTohash()
+            this.Navigate(Path) 
             this.RenderView(this.GetCurrentPath())
+
         }
 
         ListenTohash() {
@@ -20,6 +22,7 @@
 
         RenderView(Path) {
             const viewFn = this.routes.get(Path) || this.routes.get(404);
+            
             this.root.innerHTML = viewFn();
         }
 
@@ -42,5 +45,3 @@
     }
     const root = document.getElementById("root")
     console.log(HomeView());
-
-    const router = new Router("/", HomeView, NotFoundView, root)

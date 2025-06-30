@@ -1,4 +1,4 @@
-
+import { addevent, delevent } from "./events.js";
 
 export function createElement(tag, attrs, ...childs) {
   const flatchilds = childs.flat(Infinity)
@@ -23,7 +23,7 @@ export function render(vdom, container) {
   }
 
   if (typeof vdom === 'string' || typeof vdom === 'number') {
-    console.log(container)
+    // console.log(container)
     container.appendChild(document.createTextNode(vdom));
     return;
   }
@@ -35,8 +35,7 @@ export function render(vdom, container) {
   for (const [k, val] of Object.entries(vdom.attrs || {})) {
     if (k.startsWith('on') && typeof val === 'function') {
       const eventName = k.substring(2).toLowerCase();
-      
-      Rele.addEventListener(eventName, val);
+      addevent(eventName,Rele.tagName,val);
     } else if (k === 'className') {
       Rele.className = val;
     } else if (k === 'style' && typeof val === 'object') {
@@ -67,7 +66,7 @@ export function diff(old, newD) {
    return { node: newD };
   }
 
-  console.log("beeeeekhdshkf" , newD);
+  // console.log("beeeeekhdshkf" , newD);
   
   if ((typeof old === 'string' && typeof newD === 'string') || (typeof old === 'number' && typeof newD === 'number')  ) {
     if (old !== newD) {
@@ -106,7 +105,7 @@ export function diff(old, newD) {
 
 export function patch(parent, patches, index = 0) {
 
-  console.log(patches,"hipp")
+  // console.log(patches,"hipp")
 
   if (!patches) {
     if (parent.childNodes[index]) {
@@ -116,7 +115,6 @@ export function patch(parent, patches, index = 0) {
   }
   
   if (parent.childNodes[index] === undefined) {    
-    console.log(patches,parent)
     render(patches.node,parent);
     return;
   }
@@ -124,9 +122,9 @@ export function patch(parent, patches, index = 0) {
     const element = parent.childNodes[index];
     for (const [k, val] of Object.entries(patches.attrPatches)) {
       if (k.startsWith('on') && typeof val === 'function') {
-        element.removeEventListener(k.substring(2).toLowerCase(), element[k]);
-        element.addEventListener(k.substring(2).toLowerCase(), val);
-        element[k] = val;
+
+        delevent(k.substring(2).toLocaleLowerCase(),element.tagName,val);
+        addevent(k.substring(2).toLocaleLowerCase(),element.tagName,val);
       } else if (val === null || val === undefined) {
         element.removeAttribute(k);
       } else {
@@ -136,14 +134,11 @@ export function patch(parent, patches, index = 0) {
   }
 
   if (patches.childPatches) {
-    const childNode = parent.childNodes[index];
-    // console.log(childNode, "childNode" , "patches", );
-    
+    const childNode = parent.childNodes[index];    
     for (let i = 0; i < patches.childPatches.length; i++) {
       patch(childNode, patches.childPatches[i], i);
     }
     return; 
-
   }
   if (typeof patches.node === 'string' || typeof patches.node === 'number') {
     parent.childNodes[index].textContent = patches.node
