@@ -122,7 +122,6 @@ class Component {
     }
 
 const counterComponent = new Component({}, root, () => {
-    // console.log(filterState() , "fffffffffffffffffff");
     
     const [Todo, SetTodo] = useState([])
     console.log(Todo(), "fsdfsdfdsfdsfsdfsdfsdfs");
@@ -130,17 +129,12 @@ const counterComponent = new Component({}, root, () => {
 
         SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     });
-
     addevent("change", '[data-checked="checked"]', (e) => {
         e.target.classList.toggle("completed")
     });
-
     addevent("keydown", '[data-input="input"]', (e) => {
-        console.log("itts here");
-
         if (e.key === "Enter") {
             if (e.target.value !== ""){
-
                 SetTodo(e.target.value)
                 e.target.value = ""
             }
