@@ -1,60 +1,60 @@
-    export class Router {
-        constructor(DefaultPath, DefaultView, NotFoundView, root ) {
-            this.root = root
-            this.routes = new Map()
-            this.AddPath(DefaultPath, DefaultView)
-            this.AddPath(404, NotFoundView)
-            this.ListenTohash()
-            this.RenderView(this.GetCurrentPath())
+export class Router {
+    constructor(DefaultPath, DefaultView, NotFoundView, root) {
+        this.root = root
+        this.routes = new Map()
+        this.AddPath(DefaultPath, DefaultView)
+        this.AddPath(404, NotFoundView)
+        this.ListenTohash()
+        this.RenderView(this.GetCurrentPath())
 
-        }
+    }
 
-        ListenTohash() {
-            window.addEventListener("hashchange", () =>
-                this.RenderView(this.GetCurrentPath()))
-        }
-        Navigate(Path) {
-            if (location.hash.slice(1) !== Path) {
-                location.hash = Path;
-            }
-        }
+    ListenTohash() {
 
-        RenderView(Path) {
-            console.log(Path);
-            console.log(this.routes);
-            
-            const viewFn = this.routes.get(Path) || this.routes.get(404);
-            // console.log("heeelo" ,viewFn);
-   
-            
-            // if (typeof viewFn === "function" ){
+        window.addEventListener("hashchange", (e) =>{
 
-            //     this.root.innerHTML = viewFn();
-            // }else{
+                           console.log("the hash changed")    
+
+            e.preventDefault()
+        this.RenderView(this.GetCurrentPath()) })
+        
+    }
+    Navigate(Path) {
+            location.hash = Path;
+        
+    }
+
+    RenderView(Path) {
+        console.log(Path);
+        console.log(this.routes);
+
+        const viewFn = this.routes.get(Path);
+        // console.log("heeelo" ,viewFn);
+
+
+        // if (typeof viewFn === "function" ){
+
+        //     this.root.innerHTML = viewFn();
+        // }else{
         // }
 
-            this.root.innerHTML = ""
-            console.log(viewFn , "thiiiiiiiiis vuewwwwww");
-            
-            viewFn.render()
-        }
+        this.root.innerHTML = ""
+        console.log(viewFn, "thiiiiiiiiis vuewwwwww");
 
-        AddPath(Path, View) {
-            this.routes.set(Path, View)
-        }
-
-        GetCurrentPath() {
-            return location.hash.slice(1) || '/';
-        }
+        viewFn.render()
     }
 
+    AddPath(Path, View) {
+        this.routes.set(Path, View)
+        console.log(this.routes);
 
-    function HomeView() {
-        return ` <div>Helllo</div>`
     }
 
-    function NotFoundView() {
-        return ` <div>404</div>`
+    GetCurrentPath() {
+        return location.hash.slice(1);
     }
-    // const root = document.getElementById("root")
-    // console.log(HomeView());
+}
+
+
+// const root = document.getElementById("root")
+// console.log(HomeView());
