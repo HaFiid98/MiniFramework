@@ -136,13 +136,17 @@ function NotFoundView() {
     return ` <div>404</div>`
 }
 
-const Todo = new Component(location.hash, root, () => {
+let Pathsetter = null
+const Todo = new Component({}, root, () => {
     const [currentPath, SetcurrentPath] = useState(location.hash)
-
     console.log('currrrrrrrentpaaaaaaaaath', currentPath());
 
+    if (!Pathsetter){
+        
+        Pathsetter = SetcurrentPath
+    }
     const [Todo, SetTodo] = useState([])
-  
+
     // console.log(Todo(), "fsdfsdfdsfdsfsdfsdfsdfs");
     // addevent("click", '[data-click="todo-add"]', (e) => {
 
@@ -154,6 +158,14 @@ const Todo = new Component(location.hash, root, () => {
         console.log("aaaaaaaaaaaaaaaaa", e.target.getAttribute('href').slice(1));
 
     });
+    addevent("hashchange", 'window', (e) => {
+
+        console.log("windoooooow clickeed");
+
+    });
+
+
+
 
     addevent("change", '[data-checked="checked"]', (e) => {
         e.target.classList.toggle("completed")
@@ -227,6 +239,7 @@ const Todo = new Component(location.hash, root, () => {
     )
 })
 
-const router1 = new Router("/", Todo, NotFoundView, root)
+
+const router1 = new Router("/", Todo, NotFoundView, root , Pathsetter)
 router1.AddPath("/completed", Todo)
 router1.AddPath("/active", Todo)

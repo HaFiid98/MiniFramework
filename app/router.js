@@ -1,27 +1,33 @@
 export class Router {
-    constructor(DefaultPath, DefaultView, NotFoundView, root) {
+    constructor(DefaultPath, DefaultView, NotFoundView, root , pathsetter) {
         this.root = root
+        this.pathsetter = pathsetter
         this.routes = new Map()
         this.AddPath(DefaultPath, DefaultView)
         this.AddPath(404, NotFoundView)
         this.ListenTohash()
-        this.RenderView(this.GetCurrentPath())
+        this.RenderView(DefaultPath)
 
     }
 
     ListenTohash() {
 
-        window.addEventListener("hashchange", (e) =>{
+        window.addEventListener("hashchange", (e) => {
 
-                           console.log("the hash changed")    
-
+            console.log("the hash changed")
             e.preventDefault()
-        this.RenderView(this.GetCurrentPath()) })
-        
+            this.pathsetter(this.GetCurrentPath())
+            
+            
+            
+            this.RenderView(this.GetCurrentPath())
+            
+        })
+
     }
     Navigate(Path) {
-            location.hash = Path;
-        
+        location.hash = Path;
+
     }
 
     RenderView(Path) {
