@@ -27,7 +27,6 @@ export class StoreState {
             this.state = newState(this.state)
         } else if (typeof newState === "string") {
             this.state = newState
-            console.log("llzakeazkeazk");
 
         } else if (Array.isArray(this.state)) {
             this.state = [...this.state, newState]
@@ -115,22 +114,7 @@ class Component {
 }
 
 
-
-// const [count, setCount, Subscribe, Unsub] = useState({ count: 0 })
-
-// console.log(count, "count");
 const root = document.getElementById("root")
-// const div = new Component(count, root, count().count, Subscribe, () => createElement("div", {}, count().count))
-
-
-
-
-// setCount({count:12356})
-// setCount({count:45654654})
-
-
-// console.log(countState.getState());
-// countState.setState({count: 144})
 
 function NotFoundView() {
     return ` <div>404</div>`
@@ -141,8 +125,8 @@ const Todo = new Component({}, root, () => {
     const [currentPath, SetcurrentPath] = useState(location.hash)
     console.log('currrrrrrrentpaaaaaaaaath', currentPath());
 
-    if (!Pathsetter){
-        
+    if (!Pathsetter) {
+
         Pathsetter = SetcurrentPath
     }
     const [Todo, SetTodo] = useState([])
@@ -155,17 +139,18 @@ const Todo = new Component({}, root, () => {
 
     addevent("click", '[data-path="path"]', (e) => {
         SetcurrentPath(e.target.getAttribute('href').slice(1))
+        e.target.classList.add("selected")
         console.log("aaaaaaaaaaaaaaaaa", e.target.getAttribute('href').slice(1));
 
     });
-    addevent("hashchange", 'window', (e) => {
 
-        console.log("windoooooow clickeed");
-
-    });
-
-
-
+    
+addevent("click" , '.clear-completed' , (e)=>{
+    e.preventDefault()
+    console.log('clear compleeteeed');
+    
+    SetTodo(prev => prev.filter(task => !task.complete))
+})
 
     addevent("change", '[data-checked="checked"]', (e) => {
         e.target.classList.toggle("completed")
@@ -209,37 +194,45 @@ const Todo = new Component({}, root, () => {
             "div",
             { class: "Container" },
 
-            createElement("p", { class: "TodoText" }, "todoMVC"),
-            createElement("input", { class: "TodoText", 'data-input': 'input' }),
+            createElement("h1", {}, "todoMVC"),
+            createElement("div", { class: "input-container" },
+                createElement("input", { class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
+                createElement("label", { class: "visually-hidden", for: "todo-input" })
+
+            ),
+            createElement("div", { class: "toggle-all-container" }, createElement("input", { type: "checkbox", class: "toggle-all" }), createElement("label", { class: "toggle-all-label", for: "toggle-all" })),
             createElement(
                 "ul",
-                { class: "list" },
+                { class: "todo-list" },
                 (
                     filterTodo.map(Task => {
-                        console.log(Task, "taaaaaaaaask")
-                        return createElement("li", { class: "listItem" }, Task.content,
-                            !Task.complete ? createElement("input", { type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
-                                : createElement("input", { type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true })
-
+                        return createElement("li", {key : Task.id, class: Task.complete ? "listItem completed" : "listItem" },
+                            createElement("div", { class: "view" },
+                                !Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
+                                    : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true })
+                                , createElement("label", { for: `todo-${Task.id}` }, Task.content))
                         )
                     }
 
 
                     ))
             ),
-            createElement("div", { class: "filterContainer" },
-                createElement("a", { href: "#/", 'data-path': "path" }, "All"),
-                createElement("a", { href: "#/completed", 'data-path': "path" }, "Completed"),
-                createElement("a", { href: "#/active", 'data-path': "path" }, "active"),
-                createElement("button", {}, "clear completed"),
-                createElement("p", { class: "items", }, `${Todo().length} items left!`),
+          Todo().length > 0 && createElement("footer", { class: "filterContainer" },
+                createElement("ul", { class: "filters" },
+                    createElement("p", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
+
+                    createElement("li", {}, createElement("a", { href: "#/", 'data-path': "path" }, "All"),
+                    ),
+                    createElement("li", {}, createElement("a", { href: "#/completed", 'data-path': "path" }, "Completed")),
+                    createElement("li", {}, createElement("a", { href: "#/active", 'data-path': "path" }, "active")),
+                    createElement("button", { class: "clear-completed" }, "clear completed")
+                ),
             ),
-            createElement("button", { class: "button", 'data-click': 'todo-add' }, "Tooodo")
         )
     )
 })
 
 
-const router1 = new Router("/", Todo, NotFoundView, root , Pathsetter)
+const router1 = new Router("/", Todo, NotFoundView, root, Pathsetter)
 router1.AddPath("/completed", Todo)
 router1.AddPath("/active", Todo)
