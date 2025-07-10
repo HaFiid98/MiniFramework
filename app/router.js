@@ -5,7 +5,7 @@
             this.AddPath(DefaultPath, DefaultView)
             this.AddPath(404, NotFoundView)
             this.ListenTohash()
-            this.Navigate(Path) 
+            this.Navigate(DefaultPath) 
             this.RenderView(this.GetCurrentPath())
 
         }
@@ -43,5 +43,4 @@
     function NotFoundView() {
         return ` <div>404</div>`
     }
-    const root = document.getElementById("root")
-    // console.log(HomeView());
+    const root = document.getElementById("roott")

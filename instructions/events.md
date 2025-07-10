@@ -74,7 +74,7 @@ export function on(eventType, selector, handler) {
 
 // Delegate click events on buttons with class "btn"
 on('click', '.btn', (event) => {
-  console.log('Button clicked:', event.target);
+  // console.log('Button clicked:', event.target);
 });
 ```
 

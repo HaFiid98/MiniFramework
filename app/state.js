@@ -1,9 +1,9 @@
 import { createElement, diff, patch, render } from "./dom.js";
-import { addevent } from "./events.js";
 import { Router } from "./router.js";
+import { eventManager } from "./events.js";
 
 
-let currentComponent = null
+let currentComponent = null;
 
 export class StoreState {
     constructor(initialValue = {}) {
@@ -47,8 +47,6 @@ export function useState(initialValue) {
 
 
     const comp = currentComponent
-    // ("currrrrrrrrrrent", comp);
-
     const stateIndex = currentComponent.stateIndex++
     if (!comp.states[stateIndex]) {
         const store = new StoreState(initialValue)
@@ -83,7 +81,7 @@ class Component {
     render() {
         this.stateIndex = 0
         currentComponent = this
-        this.dom = this.renderfunc()
+        this.dom = this.renderfunc();
         render(this.dom, this.root)
         currentComponent = null
 
@@ -94,7 +92,7 @@ class Component {
         currentComponent = this;
         const newVd = this.renderfunc()
         const patches = diff(this.dom, newVd)
-        // ('paaaatchessss', patches);
+        // console.log('paaaatchessss', patches);
 
         patch(this.root, patches)
         // render(patches , this.root)
@@ -103,29 +101,12 @@ class Component {
     }
 }
 
-
-
-// const [count, setCount, Subscribe, Unsub] = useState({ count: 0 })
-
-// (count, "count");
-// const root = document.getElementById("root")
-// const div = new Component(count, root, count().count, Subscribe, () => createElement("div", {}, count().count))
-
-
-
-
-// setCount({count:12356})
-// setCount({count:45654654})
-
-
-// (countState.getState());
-// countState.setState({count: 144})
-
   function NotFoundView() {
         return ` <div>404</div>`
     }
 
 const counterComponent = new Component({}, root, () => {
+    let all,com,act = "";
     
     const [Todo, SetTodo] = useState([])
     // (Todo(), "fsdfsdfdsfdsfsdfsdfsdfs");
@@ -133,94 +114,180 @@ const counterComponent = new Component({}, root, () => {
 
     //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     // });
-    addevent("change", '[data-checked="checked"]', (e) => {
-        e.target.classList.toggle("completed")
-    });
-    addevent("keydown", '[data-input="input"]', (e) => {
+    // eventManager.addevent("dbclick","")
+
+// Only triggers when clicking buttons with class "btn-primary"
+//     eventManager.on('click', '.btn-primary', (e) => {
+//     console.log('Primary button clicked!', e.target);
+// });
+    // addevent("change", '[data-checked="checked"]', (e) => {
+    //     e.target.classList.toggle("completed")
+    // });
+
+
+    
+    const clickedoutside = (e) => {
+    const inputElement = document.querySelector('[data-input="input"]');
+
+        if (inputElement && !inputElement.contains(e.target)) {
+    // Clicked outside the input
+        console.log('Clicked outside!');
+    // Handle the outside click
+  }
+};
+eventManager.addevent("click", clickedoutside)
+    eventManager.addevent("keydown",'[data-input="input"]', (e) => {
         if (e.key === "Enter") {
-            if (e.target.value !== ""){
-                SetTodo([...Todo(),{id:Todo().length,text:e.target.value,completed:false}])
+            if (e.target.getAttribute('id') === "edit") {
+                const id = parseInt(e.target.getAttribute('key'));
+                SetTodo(Todo().map(todo => {
+                    if (todo.id === id) {
+                        return {...todo, text: e.target.value, db: false};
+                    }
+                    return todo;
+                }));
+                e.target.value = "";
+                return;
+            }
+            if (e.target.value !== "" && e.target.value.length != 1){
+                SetTodo([...Todo(),{id:Todo().length,text:e.target.value,completed:false,db:false}]);
+                // console.log("Todoerrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
                 e.target.value = ""
             }
-        }
-    });
-        addevent("click", '[data-all="all"]', (e) => {
-            setFilter("all")
-        });
-                addevent("click", '[data-com="com"]', (e) => {
-            setFilter("completed")
-        });
-                addevent("click", '[data-act="act"]', (e) => {
-            setFilter("active")
-        });
-    // setTodo([])
+        }});
 
     const [flter, setFilter] = useState("all");
+    eventManager.addevent('click','[data-all="all"]',() => {
+        setFilter("all");
+        all = "selected";
+        com,act = "";
+    });
+        eventManager.addevent('click','[data-act="act"]',() => {
+        setFilter("active");
+        act = "selected";
+        com,all = "";
+    });
+        eventManager.addevent('click','[data-com="com"]',() => {
+        setFilter("completed");
+        com = "selected";
+        all,act = "";
+    });
+        const deltodo = (id) => {
+            SetTodo(Todo().filter(todo => {
+                if(todo.id != id) return true;
+                return false;
+            }))
+        }
+    eventManager.addevent("click",".clear-completed",() => {
+        SetTodo(Todo().filter(todo => {
+            if(todo.completed) return false;
+            return true;
 
+        }))
+    })
+    eventManager.addevent("click",".toggle-all",() => {
+        if (flter() === "completed") {
+            SetTodo(Todo().map(todo => ({...todo, completed: completed === true ? false : true})));
+            return;
+        }
+        if (flter() === "active") {
+            SetTodo(Todo().map(todo => ({...todo, completed: completed === false ? true : false})));
+            return;
+        }
+        if (getactive() > 0) {
+            SetTodo(Todo().map(todo => ({...todo, completed: true})));
+            return;
+        }
+        SetTodo(Todo().map(todo => ({...todo, completed: false})));
+    }
+);
+
+    const getactive = () => {
+        return Todo().filter(todo => {
+             return todo.completed === false ? true : false;  
+        }).length
+    }
         const toggleTodo = (id) => {
-            // console.log("hello",Todo().map(todo =>
-            //   todo.id === id ? {id:todo.id,text:todo.text, completed: !todo.completed } : todo
-            //       ),id)
             SetTodo(Todo().map(todo =>
-              todo.id === id ? {id:todo.id,text:todo.text, completed: !todo.completed } : todo
+              todo.id === id ? {...todo, completed: !todo.completed} : todo
                   ));
-                    // console.log(Todo(),"heee")
                 };
 
         const filteredTodos = Todo().filter(todo => {
-            // console.log(todo.completed,filter())
          if (flter() === "completed") return todo.completed;
           if (flter() === "active") return !todo.completed;
          return true;
          });
-        //  console.log(filteredTodos,flter())
-        //  console.log( filteredTodos.map(todo => { console.log("helloewww");
-        //             return (createElement("li", {key:todo.id}, todo.text, createElement("input", { type: "checkbox",   'data-checked': "checked" , onChange:() =>toggleTodo(todo.id)})))}),"hello")
+
+
+        const footer = ()=>{
+                    if (filteredTodos.length > 0){
+                        return createElement("footer",{class:"footer"},
+                            createElement("span",{class:"todo-count"},`${getactive()} left!`),
+                            createElement("ul",{class:"filters"},
+                            createElement("li",{},createElement("a", {class:all, href: "#/",'data-all':"all" }, "All")),
+                            createElement("li",{},createElement("a", {class:act, href: "#/active",'data-act':"act" }, "Active")),
+                            createElement("li",{},createElement("a", {class:com, href: "#/completed",'data-com':"com"}, "Completed")),
+                            createElement("button",{class:"clear-completed"},"clear completed")));
+                    }
+                    return false
+                };
+        let foot = footer();
+
+        // console.log("fileteredTodos",filteredTodos);
+        // eventManager.addevent("change", ".toggle", (e) => {
+        //     const id = parseInt(e.target.getAttribute('data-change'));
+        //     toggleTodo(id);
+        // });
+                        eventManager.addevent("dblclick",'label', (e) => {
+                            if (e.target.hasAttribute('data-label')) {
+                                const id = parseInt(e.target.getAttribute('data-label'));
+                                console.log("id", id);
+                                            SetTodo(Todo().map(todo => {
+                                                if (todo.id === id) {
+                                                    return {...todo, db: true};
+                                                }
+                                                return todo;
+                                            }));
+                                    }
+                                    }
+                                    );
     return (
-
-        createElement(
-            "div",
-            { class: "Container" },
-            // createElement("p", {}, count().count),
-            // createElement("button", {
-            // 'data-click': 'Increase-click'
-            // }, "increase"),
-            createElement("p", { class: "TodoText" }, "todoMVC"),
-            createElement("input", { class: "TodoText", 'data-input': 'input' }),
-            createElement(
-                "ul",
-                { class: "list" },
-                // ( (Todo()).map(Task => createElement("li", { class: "listItem" }, Task,
-                //     createElement("input", { type: "checkbox", 'data-checked': "checked" })
-                // ))),
-                filteredTodos.map(todo => {
-                    addevent("change",`#${todo.id}`,() => toggleTodo(todo.id));
-                    return (createElement("li", {key:todo.id}, todo.text, createElement("input", { type: "checkbox",   id:todo.id})))}
-                
-            )
-            // createElement("div", { class: "filterContainer" },
-            //     createElement("a", { href: "#/" }, "All"),
-            //     createElement("a", { href: "#/completed" }, "Completed"),
-            //     createElement("a", { href: "#/active" }, "active"),
-            //     createElement("button", {}, "clear completed"),
-            //     createElement("p", { class: "items" }, `${Todo().length} items left!`),
-            // ),
-            // createElement("button", { class: "button", 'data-click': 'todo-add' }, "Tooodo")
-
-
-        ),createElement("button",{'data-all':'all'},"all"),createElement("button",{'data-act':'act'},"active"),
-        createElement("button",{'data-com':'com'},"completed")
-
-
-    ))
+        createElement("div",{ class: "Container"},
+            createElement("aside",{class:"learn"}),
+            createElement("section",{class:"todoapp",id:"root"},
+                createElement("header",{class:"header"},
+                    createElement("h1",{},"todos"),
+                createElement("div",{class:"input-container"},
+                    createElement("input", { class: "new-todo",id:"todo-input", 'data-input': 'input',placeholder:"What needs to be done?" },"inputing"))),
+                createElement("main",{class:"main"}, filteredTodos.length > 0 ? createElement("div",{class:"toggle-all-container"},
+                            createElement("input",{class:"toggle-all",type:"checkbox",id:"toggle-all"}),
+                                createElement("label",{class:"toggle-all-label",for:"toggle-all"},"toggle all input")) : false,
+                    filteredTodos.length > 0 ? createElement("ul",{ class: "todo-list"},
+                                filteredTodos.map(todo => {
+                                    eventManager.addevent("click",`[data-change="${todo.id}"]`,() => toggleTodo(todo.id));
+                                    eventManager.addevent("click",".destroy",() => deltodo(todo.id));
+                                    let cmp = todo.completed ? "completed":"";
+                                    return todo.db ? createElement("li", {class:"",key:todo.id},
+                                                       createElement("div",{class:"view"},
+                                                         createElement("div",{class:"input-container" , onClick: (e) => e.stopPropagation()},
+                                                            createElement("input", {id:"edit",key:todo.id,'data-input':"input", class: "new-todo", type: "text", value: todo.text}, "inputing")))) :
+                                            createElement("li", {class:cmp,key:todo.id},
+                                                    createElement("div",{class:"view"},(!todo.completed ?
+                                                    createElement("input", { class: "toggle", type: "checkbox", 'data-change': `${todo.id}`}) :
+                                                    createElement("input", { class:"toggle", type: "checkbox", 'data-change':`${todo.id}`, checked: "" })),
+                                                    createElement("label",{'data-label':`${todo.id}`},todo.text),
+                                                    createElement("button",{class:"destroy"})))})) : false ), filteredTodos.length > 0 ? foot : false),
+            createElement("footer",{class:"info"},createElement("p",{},"Double-click to edit a todo"),createElement("p",{},"Double-Created by hafid && anas"))))
 
 
 }
-
-
-
 )
-const router1 = new Router("/qdqsdqs" , counterComponent , NotFoundView , root )
+// const router1 = new Router("/" , counterComponent , NotFoundView , root )
+// const routeract = new Router("/active" , counterComponent , setFilter("active") , root )
+// const routercom = new Router("/completed" , counterComponent , setFilter("completed") , root )
+// const router1 = new Router("/" , counterComponent , NotFoundView , root )
+
 
 
 
