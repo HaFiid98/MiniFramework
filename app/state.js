@@ -144,13 +144,13 @@ const Todo = new Component({}, root, () => {
 
     });
 
-    
-addevent("click" , '.clear-completed' , (e)=>{
-    e.preventDefault()
-    console.log('clear compleeteeed');
-    
-    SetTodo(prev => prev.filter(task => !task.complete))
-})
+
+    addevent("click", '.clear-completed', (e) => {
+        e.preventDefault()
+        console.log('clear compleeteeed');
+
+        SetTodo(prev => prev.filter(task => !task.complete))
+    })
 
     addevent("change", '[data-checked="checked"]', (e) => {
         e.target.classList.toggle("completed")
@@ -206,7 +206,7 @@ addevent("click" , '.clear-completed' , (e)=>{
                 { class: "todo-list" },
                 (
                     filterTodo.map(Task => {
-                        return createElement("li", {key : Task.id, class: Task.complete ? "listItem completed" : "listItem" },
+                        return createElement("li", { key: Task.id, class: Task.complete ? "listItem completed" : "listItem" },
                             createElement("div", { class: "view" },
                                 !Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
                                     : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true })
@@ -217,7 +217,7 @@ addevent("click" , '.clear-completed' , (e)=>{
 
                     ))
             ),
-          Todo().length > 0 && createElement("footer", { class: "filterContainer" },
+            Todo().length > 0 && createElement("footer", { class: "filterContainer" },
                 createElement("ul", { class: "filters" },
                     createElement("p", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
 

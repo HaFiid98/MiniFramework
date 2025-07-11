@@ -1,10 +1,8 @@
-// vdom.js
+import { addevent } from "./events.js";
 
-import { addevent, delevent } from "./events.js";
-
-// ✅ 1. createElement with key support
 export function createElement(tag, attrs, ...childs) {
   const flatchilds = childs.flat(Infinity);
+
   const checkedchilds = flatchilds.filter(
     child => child != null && child !== false
   );
@@ -12,25 +10,31 @@ export function createElement(tag, attrs, ...childs) {
   return {
     tag,
     attrs: attrs || {},
-    key: attrs?.key ?? null, // ✅ Store key
     children: checkedchilds
   };
 }
 
-// ✅ 2. render virtual DOM into real DOM
 export function render(vdom, container) {
   while (typeof vdom === 'function') {
     vdom = vdom();
   }
 
   if (typeof vdom === 'string' || typeof vdom === 'number') {
-    container.appendChild(document.createTextNode(vdom));
+    const textNode = document.createTextNode(vdom);
+    if (container) container.appendChild(textNode);
+    return textNode;
+  }
+
+  if (!vdom) {
     return;
   }
 
-  if (!vdom) return;
-
   const Rele = document.createElement(vdom.tag);
+
+  // Attach __key for reconciliation if key is provided
+  if (vdom.attrs?.key != null) {
+    Rele.__key = vdom.attrs.key;
+  }
 
   for (const [k, val] of Object.entries(vdom.attrs || {})) {
     if (k.startsWith('on') && typeof val === 'function') {
@@ -41,14 +45,8 @@ export function render(vdom, container) {
     } else if (k === 'style' && typeof val === 'object') {
       Object.assign(Rele.style, val);
     } else {
-      if (k === 'checked') Rele.checked = !!val;
-      else Rele.setAttribute(k, val);
+      Rele.setAttribute(k, val);
     }
-  }
-
-  // ✅ Set data-key if key exists
-  if (vdom.key != null) {
-    Rele.setAttribute("data-key", vdom.key);
   }
 
   const children = Array.isArray(vdom.children) ? vdom.children : [vdom.children];
@@ -58,93 +56,88 @@ export function render(vdom, container) {
     }
   });
 
-  container.appendChild(Rele);
+  if (container != null) container.appendChild(Rele);
+  return Rele;
 }
 
-// ✅ 3. diff with key-based child matching
 export function diff(old, newD) {
-  if (newD === undefined) return null;
   if (!old) return { node: newD };
+  if (!newD) return { node: null };
 
-  if ((typeof old === 'string' || typeof old === 'number') &&
-      (typeof newD === 'string' || typeof newD === 'number')) {
-    return old !== newD ? { node: newD } : { node: null };
+  if (typeof old === 'string' || typeof newD === 'string') {
+    if (old !== newD) {
+      return { node: newD };
+    }
+    return { node: old };
   }
 
-  if (old.tag !== newD.tag) return { node: newD };
+  if (old.tag !== newD.tag) {
+    return { node: newD };
+  }
+
+  if (typeof newD === "function") {
+    return { node: newD };
+  }
 
   const attrPatches = {};
   const allAttrs = new Set([...Object.keys(old.attrs), ...Object.keys(newD.attrs)]);
+
   for (const key of allAttrs) {
     if (old.attrs[key] !== newD.attrs[key]) {
       attrPatches[key] = newD.attrs[key];
     }
   }
 
-  // ✅ Key-aware diffing
   const oldChildren = old.children || [];
   const newChildren = newD.children || [];
-  const childPatches = [];
-  const keyed = !!newChildren.some(c => c?.key != null);
 
-  if (keyed) {
-    const oldMap = {};
-    oldChildren.forEach((child, i) => {
-      const key = child?.key ?? i;
-      oldMap[key] = child;
-    });
+  // Check if all children have keys for keyed diffing
+  const isKeyed =
+    oldChildren.length > 0 &&
+    oldChildren.every(c => c && c.attrs?.key != null) &&
+    newChildren.length > 0 &&
+    newChildren.every(c => c && c.attrs?.key != null);
 
-    newChildren.forEach((child, i) => {
-      const key = child?.key ?? i;
-      const oldMatch = oldMap[key];
-      childPatches.push(diff(oldMatch, child));
-    });
+  let childPatches = [];
 
-    return {
-      node: newD,
-      attrPatches,
-      childPatches,
-      keyed: true,
-      keys: newChildren.map(c => c?.key ?? null)
-    };
+  if (isKeyed) {
+    const oldMap = new Map(oldChildren.map(c => [c.attrs.key, c]));
+    const newMap = new Map(newChildren.map(c => [c.attrs.key, c]));
+
+    const allKeys = Array.from(new Set([...oldMap.keys(), ...newMap.keys()]));
+    childPatches = allKeys.map(key => diff(oldMap.get(key), newMap.get(key)));
   } else {
     const len = Math.max(oldChildren.length, newChildren.length);
     for (let i = 0; i < len; i++) {
       childPatches.push(diff(oldChildren[i], newChildren[i]));
     }
-
-    return {
-      node: newD,
-      attrPatches,
-      childPatches,
-      keyed: false
-    };
   }
+
+  return {
+    node: newD,
+    attrPatches,
+    childPatches
+  };
 }
 
-// ✅ 4. patch with key-based mapping and checkbox handling
+let track = -1;
+
 export function patch(parent, patches, index = 0) {
-  if (!patches) {
-    if (parent.childNodes[index]) {
-      parent.removeChild(parent.childNodes[index]);
-    }
-    return;
+  if (!patches.node) {
+    parent.removeChild(parent.childNodes[index]);
+    return 1;
   }
 
-  if (parent.childNodes[index] === undefined) {
-    render(patches.node, parent);
-    return;
+  if (!parent.childNodes[index]) {
+    parent.appendChild(render(patches.node, null));
+    return 0;
   }
-
-  const element = parent.childNodes[index];
 
   if (patches.attrPatches) {
+    const element = parent.childNodes[index];
     for (const [k, val] of Object.entries(patches.attrPatches)) {
       if (k.startsWith('on') && typeof val === 'function') {
-        delevent(k.substring(2).toLowerCase(), element.tagName, val);
         addevent(k.substring(2).toLowerCase(), element.tagName, val);
-      } else if (k === 'checked') {
-        element.checked = !!val; // ✅ Proper checkbox control
       } else if (val === null || val === undefined) {
         element.removeAttribute(k);
       } else {
@@ -155,38 +148,60 @@ export function patch(parent, patches, index = 0) {
 
   if (patches.childPatches) {
     const childNode = parent.childNodes[index];
+    const patchesChildren = patches.childPatches;
 
-    if (patches.keyed) {
-      const existingMap = {};
-      for (let i = 0; i < childNode.childNodes.length; i++) {
-        const node = childNode.childNodes[i];
-        const key = node?.getAttribute?.('data-key') ?? i;
-        existingMap[key] = node;
-      }
+    // Detect if keyed patching is possible
+    const isKeyed = patchesChildren.length > 0 && patchesChildren.every(p => p?.node?.attrs?.key != null);
 
-      patches.keys.forEach((key, i) => {
-        const patchData = patches.childPatches[i];
-        const existing = existingMap[key];
-
-        if (existing && childNode.childNodes[i] !== existing) {
-          childNode.insertBefore(existing, childNode.childNodes[i]);
-        }
-
-        patch(childNode, patchData, i);
+    if (isKeyed) {
+      // Map existing DOM children by __key
+      const existingChildren = Array.from(childNode.childNodes);
+      const keyedDOM = new Map();
+      existingChildren.forEach(el => {
+        if (el.__key != null) keyedDOM.set(el.__key, el);
       });
 
-      // Remove extra nodes
-      while (childNode.childNodes.length > patches.keys.length) {
-        childNode.removeChild(childNode.lastChild);
+      // Build new list and patch or insert accordingly
+      patchesChildren.forEach(patchData => {
+        const key = patchData?.node?.attrs?.key;
+        if (key != null) {
+          const existingEl = keyedDOM.get(key);
+          if (existingEl) {
+            patch(childNode, patchData, Array.from(childNode.childNodes).indexOf(existingEl));
+            keyedDOM.delete(key);
+          } else {
+            // Insert new element for this key
+            const newEl = render(patchData.node, null);
+            newEl.__key = key;
+            childNode.appendChild(newEl);
+          }
+        }
+      });
+
+      // Remove leftover elements that are not in new patch
+      for (const leftoverEl of keyedDOM.values()) {
+        childNode.removeChild(leftoverEl);
       }
+
     } else {
-      for (let i = 0; i < patches.childPatches.length; i++) {
-        patch(childNode, patches.childPatches[i], i);
+      // Non-keyed patch (by index)
+      let j = 0;
+      for (let i = 0; i < patchesChildren.length; i++) {
+        track = patch(childNode, patchesChildren[i], j);
+        if (track === 1) {
+          j--;
+          track = -1;
+        }
+        j++;
       }
     }
   }
 
-  if (typeof patches.node === 'string' || typeof patches.node === 'number') {
+  // Update text content if node is string or number and changed
+  if ((typeof patches.node === 'string' || typeof patches.node === 'number') &&
+    parent.childNodes[index].textContent !== patches.node) {
     parent.childNodes[index].textContent = patches.node;
   }
+
+  return 3;
 }
