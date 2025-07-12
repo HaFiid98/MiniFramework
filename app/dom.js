@@ -1,4 +1,4 @@
-import { addevent } from "./events.js";
+import { eventManager } from "./events.js";
 
 export function createElement(tag, attrs, ...childs) {
   const flatchilds = childs.flat(Infinity);
@@ -39,7 +39,7 @@ export function render(vdom, container) {
   for (const [k, val] of Object.entries(vdom.attrs || {})) {
     if (k.startsWith('on') && typeof val === 'function') {
       const eventName = k.substring(2).toLowerCase();
-      addevent(eventName, Rele.tagName, val);
+      eventManager.addevent(eventName, Rele.tagName, val);
     } else if (k === 'className') {
       Rele.className = val;
     } else if (k === 'style' && typeof val === 'object') {
@@ -137,7 +137,7 @@ export function patch(parent, patches, index = 0) {
     const element = parent.childNodes[index];
     for (const [k, val] of Object.entries(patches.attrPatches)) {
       if (k.startsWith('on') && typeof val === 'function') {
-        addevent(k.substring(2).toLowerCase(), element.tagName, val);
+        eventManager.addevent(k.substring(2).toLowerCase(), element.tagName, val);
       } else if (val === null || val === undefined) {
         element.removeAttribute(k);
       } else {
