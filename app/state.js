@@ -35,6 +35,14 @@ export class StoreState {
             this.state = { ...this.state, ...newState };
         }
 
+        //   if (typeof newState === 'function') {
+        //     this.state = newState(this.state)
+        //   } else {
+        //     this.state = newState
+        //   }
+        this.notify();
+
+
 
         //   if (typeof newState === 'function') {
         //     this.state = newState(this.state); // Functional update
@@ -45,7 +53,6 @@ export class StoreState {
 
 
 
-        this.notify();
     }
 
     notify() {
@@ -137,6 +144,19 @@ const Todo = new Component({}, root, () => {
     //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     // });
 
+    addevent("dblclick", 'label', (e) => {
+        if (e.target.hasAttribute('data-label')) {
+            const id = parseInt(e.target.getAttribute('data-label'));
+            // console.log("id", id);
+            SetTodo(prev => {
+                return prev.map(task => task.id === id ? { ...task, db: true } : task)
+            })
+
+        }
+        console.log("tooooodo dbbbbbbbbbb", Todo(),);
+
+    }
+    );
     addevent("click", '[data-path="path"]', (e) => {
         SetcurrentPath(e.target.getAttribute('href').slice(1))
         e.target.classList.add("selected")
@@ -176,7 +196,7 @@ const Todo = new Component({}, root, () => {
 
         if (e.key === "Enter") {
             if (e.target.value !== "") {
-                SetTodo({ id: Date.now(), content: e.target.value, complete: false })
+                SetTodo({ id: Date.now(), content: e.target.value, complete: false, db: false })
                 e.target.value = ""
             }
         }
@@ -206,12 +226,20 @@ const Todo = new Component({}, root, () => {
                 { class: "todo-list" },
                 (
                     filterTodo.map(Task => {
-                        return createElement("li", { key: Task.id, class: Task.complete ? "listItem completed" : "listItem" },
+
+
+                        return (Task.db == false ? (createElement("li", { key: Task.id, class: Task.complete ? "listItem completed" : "listItem" },
                             createElement("div", { class: "view" },
-                                !Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
-                                    : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true })
-                                , createElement("label", { for: `todo-${Task.id}` }, Task.content))
-                        )
+                                (!Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
+                                    : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true }))
+                                , createElement("label", { 'data-label': `${Task.id}`, for: `todo-${Task.id}` }, Task.content))
+                        )) : (createElement("li", { class: "", key: Task.id },
+                            createElement("div", { class: "view" },
+                                createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
+                                    createElement("input", {
+                                        id: "edit", key: Task.id, 'data-input': "input", class: "new-todo", type: "text", value: Task.content,
+                               
+                                    }, "inputing"))))))
                     }
 
 

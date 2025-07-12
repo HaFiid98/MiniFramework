@@ -132,6 +132,17 @@ export function patch(parent, patches, index = 0) {
     parent.appendChild(render(patches.node, null));
     return 0;
   }
+// REPLACE NODE IF TAG CHANGED
+if (
+  patches.node &&
+  typeof patches.node === "object" &&
+  parent.childNodes[index].nodeName.toLowerCase() !== patches.node.tag.toLowerCase()
+) {
+  const newNode = render(patches.node, null);
+  parent.replaceChild(newNode, parent.childNodes[index]);
+  return 0;
+}
+
 
   if (patches.attrPatches) {
     const element = parent.childNodes[index];
