@@ -127,11 +127,11 @@ const counterComponent = new Component({}, root, () => {
 
     
     const clickedoutside = (e) => {
-    const inputElement = document.querySelector('[data-input="input"]');
+    const inputElement = document.querySelector('.input-container');
 
         if (inputElement && !inputElement.contains(e.target)) {
     // Clicked outside the input
-        console.log('Clicked outside!');
+        
     // Handle the outside click
   }
 };
@@ -221,7 +221,6 @@ eventManager.addevent("click", clickedoutside)
 
 
         const footer = ()=>{
-                    if (filteredTodos.length > 0){
                         return createElement("footer",{class:"footer"},
                             createElement("span",{class:"todo-count"},`${getactive()} left!`),
                             createElement("ul",{class:"filters"},
@@ -229,8 +228,6 @@ eventManager.addevent("click", clickedoutside)
                             createElement("li",{},createElement("a", {class:act, href: "#/active",'data-act':"act" }, "Active")),
                             createElement("li",{},createElement("a", {class:com, href: "#/completed",'data-com':"com"}, "Completed")),
                             createElement("button",{class:"clear-completed"},"clear completed")));
-                    }
-                    return false
                 };
         let foot = footer();
 
@@ -242,7 +239,7 @@ eventManager.addevent("click", clickedoutside)
                         eventManager.addevent("dblclick",'label', (e) => {
                             if (e.target.hasAttribute('data-label')) {
                                 const id = parseInt(e.target.getAttribute('data-label'));
-                                console.log("id", id);
+                                // console.log("id", id);
                                             SetTodo(Todo().map(todo => {
                                                 if (todo.id === id) {
                                                     return {...todo, db: true};
@@ -263,8 +260,12 @@ eventManager.addevent("click", clickedoutside)
                 createElement("main",{class:"main"}, filteredTodos.length > 0 ? createElement("div",{class:"toggle-all-container"},
                             createElement("input",{class:"toggle-all",type:"checkbox",id:"toggle-all"}),
                                 createElement("label",{class:"toggle-all-label",for:"toggle-all"},"toggle all input")) : false,
-                    filteredTodos.length > 0 ? createElement("ul",{ class: "todo-list"},
+                    
+                    
+                                filteredTodos.length > 0 ? createElement("ul",{ class: "todo-list"},
+
                                 filteredTodos.map(todo => {
+
                                     eventManager.addevent("click",`[data-change="${todo.id}"]`,() => toggleTodo(todo.id));
                                     eventManager.addevent("click",".destroy",() => deltodo(todo.id));
                                     let cmp = todo.completed ? "completed":"";
@@ -272,12 +273,13 @@ eventManager.addevent("click", clickedoutside)
                                                        createElement("div",{class:"view"},
                                                          createElement("div",{class:"input-container" , onClick: (e) => e.stopPropagation()},
                                                             createElement("input", {id:"edit",key:todo.id,'data-input':"input", class: "new-todo", type: "text", value: todo.text}, "inputing")))) :
-                                            createElement("li", {class:cmp,key:todo.id},
-                                                    createElement("div",{class:"view"},(!todo.completed ?
-                                                    createElement("input", { class: "toggle", type: "checkbox", 'data-change': `${todo.id}`}) :
-                                                    createElement("input", { class:"toggle", type: "checkbox", 'data-change':`${todo.id}`, checked: "" })),
+                                                 createElement("li", {class:cmp,key:todo.id},
+                                                    createElement("div",{class:"view"},
+                                                        // (!todo.completed ?
+                                                    createElement("input", { class: "toggle", type: "checkbox", 'data-change': `${todo.id}`}), 
                                                     createElement("label",{'data-label':`${todo.id}`},todo.text),
-                                                    createElement("button",{class:"destroy"})))})) : false ), filteredTodos.length > 0 ? foot : false),
+                                                    createElement("button",{class:"destroy"})))})
+                                                ) : false ), Todo().length > 0 ? foot : false),
             createElement("footer",{class:"info"},createElement("p",{},"Double-click to edit a todo"),createElement("p",{},"Double-Created by hafid && anas"))))
 
 

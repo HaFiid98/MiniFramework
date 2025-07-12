@@ -16,7 +16,7 @@ class eventmanager {
 
     this.lastclick = 0;
     this.clicktimeout = null;
-    this.delayfordbclick = 600;
+    this.delayfordbclick = 400;
 
     this.overrideHandlers();
     this.startScrollPolling();
@@ -54,18 +54,14 @@ class eventmanager {
     if (!this.handlers[type]) return;
 
     for (const { selector, handler } of this.handlers[type]) {
-          // console.log("event triggered for selector", selector, "with event", e.target.matches(selector),e.target);
-          // console.log("handler", toString(handler));
       try {
         if (!selector) {
           handler(e);
         }
         else if (e.target.matches(selector)) {
-          // console.log("selector matched", selector, "for event", e);
           handler(e);
         }
       } catch (e) {
-        // console.log("Error in event handler", e);
         console.error(`Error in ${type} handler`, e);
       }
     }
