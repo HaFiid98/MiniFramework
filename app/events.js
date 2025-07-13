@@ -1,29 +1,187 @@
-const eventHandlers = {};
 
 
-export function addevent(event, selector, handler) {
-  if (!eventHandlers[event]) {
-    eventHandlers[event] = [];
-    document.addEventListener(event, (e) => {
+class eventmanager {
+  constructor() {
+    this.handlers = {
+      click: [],      
+      dblclick: [],   
+      scroll: [],     
+      change: [],     
+      keydown: []    
+    };
 
-      for (const { selector, handler } of eventHandlers[event]) {
-        if (e.target.matches(selector)) {
-          handler(e);
-          console.log('Delegated handler triggered', e.target);
-          break
+    this.lastscp = window.scrollY;
+    this.lastvals = new Map();
+    this.inputs = new Set();
 
-        }
-      }
-    });
+    this.lastclick = 0;
+    this.clicktimeout = null;
+    this.delayfordbclick = 1000;
+
+    this.overrideHandlers();
+    // this.startScrollPolling();
+    this.startChangePolling();
+    this.observeInputChanges();
+    this.startKeyListener();
   }
 
-  eventHandlers[event].push({ selector, handler });
-}
+  addevent(eventType, selorhand, handler) {
+    if (!this.handlers[eventType]) return;
+    if (typeof selorhand === 'function') {
+    this.delevent(eventType,null,selorhand);
+      this.handlers[eventType].push({
+        selector: null,
+        handler: selorhand
+      });
+    }
+    else if (typeof handler === 'function') {
+      this.delevent(eventType,selorhand,handler);
+      this.handlers[eventType].push({
+        selector: selorhand,
+        handler: handler
+      });
+    }
+  }
 
-export function delevent(event, selector, handler) {
-  if (eventHandlers[event]) {
-    eventHandlers[event] = eventHandlers[event].filter(
-      (item) => item.selector !== selector || item.handler.toString() !== handler.toString()
+  delevent(eventType,selector, handler) {
+    if (!this.handlers[eventType]) return;
+    this.handlers[eventType] = this.handlers[eventType].filter(
+      (h) => h.selector !== selector || h.handler.toString() !== handler.toString()
     );
   }
+
+  trigger(type, e) {
+    console.log(this.handlers)
+    if (!this.handlers[type]) return;
+    for (const { selector, handler } of this.handlers[type]) {
+          console.log("fjskldfjklsdjklfjklsdjf",e.target,selector)
+      try {
+        if (!selector) {
+          handler(e);
+        }
+        else if (e.target.matches(selector)) {
+          console.log("jjjjjjjjjjjjjjjjj",this.handlers[type])
+          handler(e);
+        }
+      } catch (e) {
+        console.error(`Error in ${type} handler`, e);
+      }
+    }
+  }
+
+  //  startScrollPolling() {
+  //   setInterval(() => {
+  //     const currY = window.scrollY;
+  //     if (currY !== this.lastscp) {
+  //       this.lastscp = currY;
+  //       this.trigger('scroll', { scrollY: currY });
+  //     }
+  //   }, 100);
+  // }
+
+  // overrideHandlers() {
+  //   const originalClick = document.onclick;
+  //   document.onclick = (e) => {
+  //     if (typeof originalClick === 'function') originalClick(e);
+  //     this.trigger('click', e);
+  //   };
+  // }
+
+  overrideHandlers() {
+    const originalClick = document.onclick;
+  
+    document.onclick = (e) => {
+      if (typeof originalClick === 'function') originalClick(e);
+      const now = Date.now();
+      // console.log("now",now, "lasttime",this.lastclick, "delay " ,this.delayfordbclick , "minus",now - this.lastclick);
+      console.log("timeeee" ,  now - this.lastclick < this.delayfordbclick);
+      
+      if (now - this.lastclick < this.delayfordbclick) {
+        console.log(this.lastclick);
+        clearTimeout(this.clicktimeout);
+        this.trigger('dblclick', e);
+        this.lastclick = 0;
+      } else {
+        console.log("jfgkdsjfjkdsjfkjsdkjfkjskdjkfsdfs")
+        this.lastclick = now;
+        this.clicktimeout = setTimeout(() => {
+          console.log("fdfdfdfdfdfdfdfdfdfdfd")
+          this.trigger('click', e);
+
+          this.lastclick = 0;
+          // console.log(this.lastclick , "laaaastclick");
+          
+        }, this.delayfordbclick);
+      }
+    };
+  }
+
+  startKeyListener() {
+    const thekeydown = document.onkeydown;
+    document.onkeydown = (e) => {
+      if (typeof thekeydown === 'function') thekeydown(e);
+      this.trigger('keydown', e);
+    };
+  }
+
+  startChangePolling() {
+  setInterval(() => {
+    for (const input of this.inputs) {
+      const oldState = this.lastvals.get(input);
+      let currentValue, currentChecked;
+
+      if (input.type === 'checkbox' || input.type === 'radio') {
+        currentChecked = input.checked;
+        if (oldState?.checked !== currentChecked) {
+          this.lastvals.set(input, { checked: currentChecked });
+          this.trigger('change', { target: input, checked: currentChecked });
+        }
+      } else {
+        currentValue = input.value;
+        if (oldState?.value !== currentValue) {
+          this.lastvals.set(input, { value: currentValue });
+          this.trigger('change', { target: input, value: currentValue });
+        }
+      }
+    }
+  }, 200);
 }
+  observeInputChanges() {
+  const addInputs = (root) => {
+    const found = root.querySelectorAll('input, textarea, select');
+    for (const input of found) {
+      this.inputs.add(input);
+      if (input.type === 'checkbox' || input.type === 'radio') {
+        this.lastvals.set(input, { checked: input.checked });
+      } else {
+        this.lastvals.set(input, { value: input.value });
+      }
+    }
+  };
+
+  addInputs(document.body);
+
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      for (const node of mutation.addedNodes) {
+        if (node.nodeType === 1) {
+          if (node.matches('input, textarea, select')) {
+            this.inputs.add(node);
+            if (node.type === 'checkbox' || node.type === 'radio') {
+              this.lastvals.set(node, { checked: node.checked });
+            } else {
+              this.lastvals.set(node, { value: node.value });
+            }
+          } else {
+            addInputs(node);
+          }
+        }
+      }
+    }
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+}
+
+export const eventManager = new eventmanager();

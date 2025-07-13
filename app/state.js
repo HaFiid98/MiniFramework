@@ -1,5 +1,5 @@
 import { createElement, diff, patch, render } from "./dom.js";
-import { addevent } from "./events.js";
+import { eventManager } from "./events.js";
 import { Router } from "./router.js";
 
 
@@ -122,7 +122,7 @@ class Component {
 
 
 const root = document.getElementById("root")
-
+var CurrentElementEdited 
 function NotFoundView() {
     return ` <div>404</div>`
 }
@@ -139,25 +139,30 @@ const Todo = new Component({}, root, () => {
     const [Todo, SetTodo] = useState([])
 
     // console.log(Todo(), "fsdfsdfdsfdsfsdfsdfsdfs");
-    // addevent("click", '[data-click="todo-add"]', (e) => {
+    // eventManager.addevent("click", '[data-click="todo-add"]', (e) => {
 
     //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     // });
 
-    addevent("dblclick", 'label', (e) => {
+    eventManager.addevent("click", "window" , (e)=>{
+        console.log("doooooooooooooooooooooooooc");
+        
+    })
+    eventManager.addevent("dblclick", 'label', (e) => {
+        console.log("eveeeeeeeeeeeent");
+e.target.focus()
         if (e.target.hasAttribute('data-label')) {
             const id = parseInt(e.target.getAttribute('data-label'));
-            // console.log("id", id);
+            console.log("ddddddddddddddddd", id);
             SetTodo(prev => {
-                return prev.map(task => task.id === id ? { ...task, db: true } : task)
+                return prev.map(task => task.id === id ? { ...task, db: true } : { ...task, db: false })
             })
-
         }
         console.log("tooooodo dbbbbbbbbbb", Todo(),);
 
     }
     );
-    addevent("click", '[data-path="path"]', (e) => {
+    eventManager.addevent("click", '[data-path="path"]', (e) => {
         SetcurrentPath(e.target.getAttribute('href').slice(1))
         e.target.classList.add("selected")
         console.log("aaaaaaaaaaaaaaaaa", e.target.getAttribute('href').slice(1));
@@ -165,18 +170,20 @@ const Todo = new Component({}, root, () => {
     });
 
 
-    addevent("click", '.clear-completed', (e) => {
+    eventManager.addevent("click", '.clear-completed', (e) => {
         e.preventDefault()
         console.log('clear compleeteeed');
 
         SetTodo(prev => prev.filter(task => !task.complete))
     })
 
-    addevent("change", '[data-checked="checked"]', (e) => {
-        e.target.classList.toggle("completed")
+    eventManager.addevent("change", '.toggle', (e) => {
+        // e.target.classList.toggle("completed")
+        console.log(e.target.tagName, "taaaaaaaaagnaame");
+
+        if (e.target.tagName !== "INPUT") return;
         const Id = e.target.dataset.id
         console.log(e.target.dataset, "daaata seeet");
-
         console.log(Id);
 
         SetTodo(prev => {
@@ -191,13 +198,20 @@ const Todo = new Component({}, root, () => {
 
     });
 
-    addevent("keydown", '[data-input="input"]', (e) => {
+    eventManager.addevent("keydown", '[data-input="input"]', (e) => {
         console.log("itts here");
-
         if (e.key === "Enter") {
             if (e.target.value !== "") {
+                console.log( "iddd :  " , e.target.getAttribute("id")  ,"keeeey : ", e.target.getAttribute("key")  , "taaarget : " ,  e.target);
+                
+                if (e.target.classList.contains("edit-todo") ){
+                const key = e.target.getAttribute("key")
+                SetTodo(prev => { return prev.map(todo => todo.id == key ? {...todo, db:false , content:e.target.value}: todo)})
+                }else{
                 SetTodo({ id: Date.now(), content: e.target.value, complete: false, db: false })
                 e.target.value = ""
+                }
+              
             }
         }
     });
@@ -211,16 +225,16 @@ const Todo = new Component({}, root, () => {
     return (
 
         createElement(
-            "div",
-            { class: "Container" },
+            "header",
+            { class: "header" },
 
             createElement("h1", {}, "todoMVC"),
             createElement("div", { class: "input-container" },
                 createElement("input", { class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
-                createElement("label", { class: "visually-hidden", for: "todo-input" })
+                createElement("label", { class: "visually-hidden", for: "todo-input" }, "todo Input")
 
             ),
-            createElement("div", { class: "toggle-all-container" }, createElement("input", { type: "checkbox", class: "toggle-all" }), createElement("label", { class: "toggle-all-label", for: "toggle-all" })),
+            createElement("div", { class: "toggle-all-container" }, createElement("input", { type: "checkbox", class: "toggle-all", id: "toggle-all", "data-testid": "toggle-all" }), createElement("label", { class: "toggle-all-label", for: "toggle-all" })),
             createElement(
                 "ul",
                 { class: "todo-list" },
@@ -228,17 +242,17 @@ const Todo = new Component({}, root, () => {
                     filterTodo.map(Task => {
 
 
-                        return (Task.db == false ? (createElement("li", { key: Task.id, class: Task.complete ? "listItem completed" : "listItem" },
+                        return (Task.db == false ? (createElement("li", { key: Task.id, class: Task.complete ? "completed" : "" },
                             createElement("div", { class: "view" },
                                 (!Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
                                     : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true }))
-                                , createElement("label", { 'data-label': `${Task.id}`, for: `todo-${Task.id}` }, Task.content))
+                                , createElement("label", { 'data-label': `${Task.id}` }, Task.content))
                         )) : (createElement("li", { class: "", key: Task.id },
                             createElement("div", { class: "view" },
                                 createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
                                     createElement("input", {
-                                        id: "edit", key: Task.id, 'data-input': "input", class: "new-todo", type: "text", value: Task.content,
-                               
+                                        id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus:true
+
                                     }, "inputing"))))))
                     }
 
