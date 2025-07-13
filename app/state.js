@@ -111,7 +111,7 @@ class Component {
         currentComponent = this;
         const newVd = this.renderfunc()
         const patches = diff(this.dom, newVd)
-        console.log('paaaatchessss', patches);
+        // console.log('paaaatchessss', patches);
 
         patch(this.root, patches)
         // render(patches , this.root)
@@ -122,7 +122,6 @@ class Component {
 
 
 const root = document.getElementById("root")
-var CurrentElementEdited 
 function NotFoundView() {
     return ` <div>404</div>`
 }
@@ -130,7 +129,6 @@ function NotFoundView() {
 let Pathsetter = null
 const Todo = new Component({}, root, () => {
     const [currentPath, SetcurrentPath] = useState(location.hash)
-    console.log('currrrrrrrentpaaaaaaaaath', currentPath());
 
     if (!Pathsetter) {
 
@@ -144,74 +142,83 @@ const Todo = new Component({}, root, () => {
     //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     // });
 
-    eventManager.addevent("click", "window" , (e)=>{
-        console.log("doooooooooooooooooooooooooc");
-        
+
+    const events = ["click",]
+
+    eventManager.addevent("click", "", (e) => {
+        if (Todo().some(todo => todo.db)) {
+
+            const input = document.querySelector(".input-container")
+            if (e.target.contains(input)) {
+                console.log("cliiiiiick outsside");
+
+                SetTodo(prev => {
+                    return prev.map(todo => { return { ...todo, db: false } })
+                })
+            }
+        }
+
     })
     eventManager.addevent("dblclick", 'label', (e) => {
         console.log("eveeeeeeeeeeeent");
-e.target.focus()
         if (e.target.hasAttribute('data-label')) {
+        
             const id = parseInt(e.target.getAttribute('data-label'));
-            console.log("ddddddddddddddddd", id);
             SetTodo(prev => {
                 return prev.map(task => task.id === id ? { ...task, db: true } : { ...task, db: false })
             })
+
+            document.querySelector("#edit").focus()
+            
         }
-        console.log("tooooodo dbbbbbbbbbb", Todo(),);
 
     }
     );
     eventManager.addevent("click", '[data-path="path"]', (e) => {
         SetcurrentPath(e.target.getAttribute('href').slice(1))
         e.target.classList.add("selected")
-        console.log("aaaaaaaaaaaaaaaaa", e.target.getAttribute('href').slice(1));
 
     });
 
-
+    
     eventManager.addevent("click", '.clear-completed', (e) => {
         e.preventDefault()
-        console.log('clear compleeteeed');
 
         SetTodo(prev => prev.filter(task => !task.complete))
     })
 
     eventManager.addevent("change", '.toggle', (e) => {
         // e.target.classList.toggle("completed")
-        console.log(e.target.tagName, "taaaaaaaaagnaame");
 
         if (e.target.tagName !== "INPUT") return;
         const Id = e.target.dataset.id
-        console.log(e.target.dataset, "daaata seeet");
-        console.log(Id);
+
 
         SetTodo(prev => {
-            console.log(prev, "prrrrrrrrrrrrrev", "idddddddd", Id);
 
             return prev.map(item => {
                 return item.id == Id ? { ...item, ["complete"]: !item.complete } : item
             }
             )
         })
-        console.log("toooooooodocheeecked", Todo());
 
     });
 
     eventManager.addevent("keydown", '[data-input="input"]', (e) => {
-        console.log("itts here");
-        if (e.key === "Enter") {
+        console.log("keeeeeeeeeey" , e.key);
+        
+        if (e.key === "Enter" || (e.key === "Tab") ) {
             if (e.target.value !== "") {
-                console.log( "iddd :  " , e.target.getAttribute("id")  ,"keeeey : ", e.target.getAttribute("key")  , "taaarget : " ,  e.target);
-                
-                if (e.target.classList.contains("edit-todo") ){
-                const key = e.target.getAttribute("key")
-                SetTodo(prev => { return prev.map(todo => todo.id == key ? {...todo, db:false , content:e.target.value}: todo)})
-                }else{
-                SetTodo({ id: Date.now(), content: e.target.value, complete: false, db: false })
-                e.target.value = ""
+                // console.log( "iddd :  " , e.target.getAttribute("id")  ,"keeeey : ", e.target.getAttribute("key")  , "taaarget : " ,  e.target);
+
+                if (e.target.classList.contains("edit-todo")) {
+                    const key = e.target.getAttribute("key")
+                    SetTodo(prev => { return prev.map(todo => todo.id == key ? { ...todo, db: false, content: e.target.value } : todo) })
+                } else if (e.key === "Enter") {
+                    SetTodo({ id: Date.now(), content: e.target.value, complete: false, db: false })
+                    e.target.value = ""
                 }
-              
+
             }
         }
     });
@@ -220,7 +227,6 @@ e.target.focus()
         currentPath() === "/active" ? Todo().filter(item => item.complete == false) :
             Todo()
 
-    console.log("toooooooooooo", filterTodo, Todo);
 
     return (
 
@@ -251,7 +257,7 @@ e.target.focus()
                             createElement("div", { class: "view" },
                                 createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
                                     createElement("input", {
-                                        id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus:true
+                                    id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus: true
 
                                     }, "inputing"))))))
                     }
