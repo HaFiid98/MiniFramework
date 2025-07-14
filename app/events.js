@@ -7,12 +7,15 @@ class eventmanager {
       dblclick: [],   
       scroll: [],     
       change: [],     
-      keydown: []    
+      keydown: [],
+      // visibilitychange:[],
+      blur:[] 
     };
 
     this.lastscp = window.scrollY;
     this.lastvals = new Map();
     this.inputs = new Set();
+    this.orblur = window.onblur;
 
     this.lastclick = 0;
     this.clicktimeout = null;
@@ -23,7 +26,28 @@ class eventmanager {
     this.startChangePolling();
     this.observeInputChanges();
     this.startKeyListener();
+    // this.visibilitychage();
+    this.bluuur();
   }
+
+
+  bluuur() {
+    window.onblur = (e) => {
+      if (typeof this.orblur === 'function') {
+        this.orblur(e); 
+      }
+      this.trigger('blur', e); 
+    };
+  }
+
+  // visibilitychage(){
+  //   // console.log("hhhhhhhhhhhhhhhhhhhhhhhhh",this.handlers["visibilitychange"])
+  //   const vbch = document.onvisibilitychange;
+  //   document.onvisibilitychange = (e) => {
+  //   if (typeof vbch === "function") vbch(e);
+  //   this.trigger('visibilitychange',e);
+  // }
+  // }
 
   addevent(eventType, selorhand, handler) {
     if (!this.handlers[eventType]) return;
@@ -139,6 +163,10 @@ class eventmanager {
     }
   }, 200);
 }
+
+
+
+
   observeInputChanges() {
   const addInputs = (root) => {
     const found = root.querySelectorAll('input, textarea, select');

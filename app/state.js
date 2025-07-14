@@ -150,7 +150,7 @@ const Todo = new Component({}, root, () => {
 
             const input = document.querySelector(".input-container")
             if (e.target.contains(input)) {
-                console.log("cliiiiiick outsside");
+                // console.log("cliiiiiick outsside");
 
                 SetTodo(prev => {
                     return prev.map(todo => { return { ...todo, db: false } })
@@ -159,8 +159,27 @@ const Todo = new Component({}, root, () => {
         }
 
     })
+    // console.log(document.visibilityState)
+
+    eventManager.addevent("blur",(e) => {
+        console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
+            SetTodo(prev => {
+                return prev.map(todo => { return { ...todo, db: false } })
+            })
+    })
+    console.log(eventManager.handlers,"fjdskljdflkjsdklfjlksjlkfjlsdkf")
+    // eventManager.addevent("visibilitychange",(e) => {
+    //     console.log(document.visibilityState, "itsmeeeeeeeeee")
+    //     if (document.visibilityState == 'hidden') {
+    //         SetTodo(prev => {
+    //             return prev.map(todo => { return { ...todo, db: false } })
+    //         })
+    //     }
+    // })
+
+    console.log(eventManager.handlers)
     eventManager.addevent("dblclick", 'label', (e) => {
-        console.log("eveeeeeeeeeeeent");
+        // console.log("eveeeeeeeeeeeent");
         if (e.target.hasAttribute('data-label')) {
         
             const id = parseInt(e.target.getAttribute('data-label'));
