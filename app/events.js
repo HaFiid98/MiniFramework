@@ -7,7 +7,9 @@ class eventmanager {
       dblclick: [],   
       scroll: [],     
       change: [],     
-      keydown: []    
+      keydown: [],
+            blur:[] 
+  
     };
 
     this.lastscp = window.scrollY;
@@ -23,7 +25,18 @@ class eventmanager {
     this.startChangePolling();
     this.observeInputChanges();
     this.startKeyListener();
+        this.bluuur();
+
   }
+    bluuur() {
+    window.onblur = (e) => {
+      if (typeof this.orblur === 'function') {
+        this.orblur(e); 
+      }
+      this.trigger('blur', e); 
+    };
+  }
+
 
   addevent(eventType, selorhand, handler) {
     if (!this.handlers[eventType]) return;

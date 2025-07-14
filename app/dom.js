@@ -44,6 +44,10 @@ export function render(vdom, container) {
       Rele.className = val;
     } else if (k === 'style' && typeof val === 'object') {
       Object.assign(Rele.style, val);
+    } else if (k === 'checked') {
+      Rele.checked = !!val;
+    } else if (k === 'value') {
+      Rele.value = val;
     } else {
       Rele.setAttribute(k, val);
     }
@@ -132,16 +136,16 @@ export function patch(parent, patches, index = 0) {
     parent.appendChild(render(patches.node, null));
     return 0;
   }
-// REPLACE NODE IF TAG CHANGED
-if (
-  patches.node &&
-  typeof patches.node === "object" &&
-  parent.childNodes[index].nodeName.toLowerCase() !== patches.node.tag.toLowerCase()
-) {
-  const newNode = render(patches.node, null);
-  parent.replaceChild(newNode, parent.childNodes[index]);
-  return 0;
-}
+  // REPLACE NODE IF TAG CHANGED
+  if (
+    patches.node &&
+    typeof patches.node === "object" &&
+    parent.childNodes[index].nodeName.toLowerCase() !== patches.node.tag.toLowerCase()
+  ) {
+    const newNode = render(patches.node, null);
+    parent.replaceChild(newNode, parent.childNodes[index]);
+    return 0;
+  }
 
 
   if (patches.attrPatches) {
@@ -149,11 +153,16 @@ if (
     for (const [k, val] of Object.entries(patches.attrPatches)) {
       if (k.startsWith('on') && typeof val === 'function') {
         eventManager.addevent(k.substring(2).toLowerCase(), element.tagName, val);
+      } else if (k === 'checked') {
+        element.checked = !!val;
+      } else if (k === 'value') {
+        element.value = val;
       } else if (val === null || val === undefined) {
         element.removeAttribute(k);
       } else {
         element.setAttribute(k, val);
       }
+
     }
   }
 

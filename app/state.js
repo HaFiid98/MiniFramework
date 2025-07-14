@@ -131,7 +131,6 @@ const Todo = new Component({}, root, () => {
     const [currentPath, SetcurrentPath] = useState(location.hash)
 
     if (!Pathsetter) {
-
         Pathsetter = SetcurrentPath
     }
     const [Todo, SetTodo] = useState([])
@@ -142,34 +141,46 @@ const Todo = new Component({}, root, () => {
     //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
     // });
 
+ 
+    const HandleDestroy = (id)=>{SetTodo(prev => prev.filter(todo => todo.id !== id))}
+eventManager.addevent("click", ".destroy", (e) => {
+  const li = e.target.closest("li");
+  if (!li) return;
 
-    const events = ["click",]
+  const id = parseInt(li.getAttribute("data-id"));
+  if (!isNaN(id)) {
+    HandleDestroy(id);
+  }
+});
+eventManager.addevent("click", "", (e) => {
+    if (!document.querySelector(".input-container")) return;
 
-    eventManager.addevent("click", "", (e) => {
-        if (Todo().some(todo => todo.db)) {
+    const isClickInside = e.target.closest(".input-container");
 
-            const input = document.querySelector(".input-container")
-            if (e.target.contains(input)) {
-                console.log("cliiiiiick outsside");
+    if (!isClickInside && Todo().some(todo => todo.db)) {
+        SetTodo(prev =>
+            prev.map(todo => ({ ...todo, db: false }))
+        );
+    }
+});
 
-                SetTodo(prev => {
-                    return prev.map(todo => { return { ...todo, db: false } })
-                })
-            }
-        }
-
+   eventManager.addevent("blur",(e) => {
+        console.log("yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy")
+            SetTodo(prev => {
+                return prev.map(todo => { return { ...todo, db: false } })
+            })
     })
     eventManager.addevent("dblclick", 'label', (e) => {
         console.log("eveeeeeeeeeeeent");
         if (e.target.hasAttribute('data-label')) {
-        
+
             const id = parseInt(e.target.getAttribute('data-label'));
             SetTodo(prev => {
                 return prev.map(task => task.id === id ? { ...task, db: true } : { ...task, db: false })
             })
 
             document.querySelector("#edit").focus()
-            
+
         }
 
     }
@@ -180,14 +191,14 @@ const Todo = new Component({}, root, () => {
 
     });
 
-    
+
     eventManager.addevent("click", '.clear-completed', (e) => {
         e.preventDefault()
 
         SetTodo(prev => prev.filter(task => !task.complete))
     })
 
-    eventManager.addevent("change", '.toggle', (e) => {
+    eventManager.addevent("click", '.toggle', (e) => {
         // e.target.classList.toggle("completed")
 
         if (e.target.tagName !== "INPUT") return;
@@ -203,12 +214,36 @@ const Todo = new Component({}, root, () => {
         })
 
     });
+    const filterTodo = currentPath() === "/completed" ? Todo().filter(item => item.complete == true) :
+        currentPath() === "/active" ? Todo().filter(item => item.complete == false) :
+            Todo()
 
+
+    eventManager.addevent("click", '.toggle-all', (e) => {
+        // e.stopPropagation()
+        // e.preventDefault()
+        console.log("eveeeeeeeeent trigerred");
+        e.preventDefault()
+        const keys = filterTodo.map(todo => todo.id)
+        const fullyCheckedUncheked = filterTodo.every(todo => todo.complete) || filterTodo.every(todo => !todo.complete)
+        if (fullyCheckedUncheked == true) {
+            SetTodo(prev => {
+                return prev.map(todo => { return keys.includes(todo.id) ? { ...todo, ["complete"]: !todo.complete } : todo })
+            }
+            )
+        } else {
+            SetTodo(prev => {
+                return prev.map(todo => { return keys.includes(todo.id) ? { ...todo, ["complete"]: true } : todo })
+            }
+            )
+        }
+
+    })
     eventManager.addevent("keydown", '[data-input="input"]', (e) => {
-        console.log("keeeeeeeeeey" , e.key);
-        
-        if (e.key === "Enter" || (e.key === "Tab") ) {
-            if (e.target.value !== "") {
+        console.log("keeeeeeeeeey", e.key);
+
+        if (e.key === "Enter" || (e.key === "Tab")) {
+            if (e.target.value !== "" && e.target.value.length >= 2) {
                 // console.log( "iddd :  " , e.target.getAttribute("id")  ,"keeeey : ", e.target.getAttribute("key")  , "taaarget : " ,  e.target);
 
                 if (e.target.classList.contains("edit-todo")) {
@@ -223,63 +258,185 @@ const Todo = new Component({}, root, () => {
         }
     });
 
-    const filterTodo = currentPath() === "/completed" ? Todo().filter(item => item.complete == true) :
-        currentPath() === "/active" ? Todo().filter(item => item.complete == false) :
-            Todo()
 
 
     return (
 
         createElement(
-            "header",
-            { class: "header" },
+            "container",
+            { class: "container" },
 
-            createElement("h1", {}, "todoMVC"),
-            createElement("div", { class: "input-container" },
-                createElement("input", { class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
-                createElement("label", { class: "visually-hidden", for: "todo-input" }, "todo Input")
+            createElement("header", { class: "header" },
+                createElement("h1", {}, "todoMVC"),
+                createElement("div", { class: "input-container" },
+                    createElement("input", { class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
+                    createElement("label", { class: "visually-hidden", for: "todo-input" }, "todo Input")
 
-            ),
-            createElement("div", { class: "toggle-all-container" }, createElement("input", { type: "checkbox", class: "toggle-all", id: "toggle-all", "data-testid": "toggle-all" }), createElement("label", { class: "toggle-all-label", for: "toggle-all" })),
-            createElement(
-                "ul",
-                { class: "todo-list" },
-                (
-                    filterTodo.map(Task => {
-
-
-                        return (Task.db == false ? (createElement("li", { key: Task.id, class: Task.complete ? "completed" : "" },
-                            createElement("div", { class: "view" },
-                                (!Task.complete ? createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
-                                    : createElement("input", { class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id, checked: true }))
-                                , createElement("label", { 'data-label': `${Task.id}` }, Task.content))
-                        )) : (createElement("li", { class: "", key: Task.id },
-                            createElement("div", { class: "view" },
-                                createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
-                                    createElement("input", {
-                                    id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus: true
-
-                                    }, "inputing"))))))
-                    }
-
-
-                    ))
-            ),
-            Todo().length > 0 && createElement("footer", { class: "filterContainer" },
-                createElement("ul", { class: "filters" },
-                    createElement("p", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
-
-                    createElement("li", {}, createElement("a", { href: "#/", 'data-path': "path" }, "All"),
-                    ),
-                    createElement("li", {}, createElement("a", { href: "#/completed", 'data-path': "path" }, "Completed")),
-                    createElement("li", {}, createElement("a", { href: "#/active", 'data-path': "path" }, "active")),
-                    createElement("button", { class: "clear-completed" }, "clear completed")
                 ),
             ),
+
+            createElement("main", { class: "main" },
+                createElement("div", { class: "toggle-all-container" }, createElement("input", { type: "checkbox", class: "toggle-all", id: "toggle-all", "data-testid": "toggle-all" }), createElement("label", { class: "toggle-all-label", for: "toggle-all" })),
+                createElement(
+                    "ul",
+                    { class: "todo-list" },
+                    (
+                        filterTodo.map(Task => {
+
+                            
+
+                            return (Task.db == false ?
+                                (createElement("li", {   'data-id': Task.id  , key: Task.id, class: Task.complete ? "completed" : "" },
+                                createElement("div", { class: "view" },
+                                    createElement("input", { checked: Task.complete, class: "toggle", id: `todo-${Task.id}`, type: "checkbox", 'data-checked': "checked", 'data-id': Task.id })
+
+                                    , createElement("label", { 'data-label': `${Task.id}` }, Task.content)),
+                                createElement("button", { class: "destroy" })
+
+                    )) : (createElement("li", { class: "", key: Task.id },
+                        createElement("div", { class: "view" },
+                            createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
+                                createElement("input", {
+                                    id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus: true
+
+                                }, "inputing"))))))
+                        }
+
+))
+                )),
+Todo().length > 0 && createElement("footer", { class: "footer" },
+    createElement("ul", { class: "filters" },
+        createElement("span", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
+
+        createElement("li", {}, createElement("a", { href: "#/", 'data-path': "path" }, "All"),
+        ),
+        createElement("li", {}, createElement("a", { href: "#/completed", 'data-path': "path" }, "Completed")),
+        createElement("li", {}, createElement("a", { href: "#/active", 'data-path': "path" }, "Active")),
+        createElement("button", { class: "clear-completed" }, "clear completed")
+    )
+
+),
+
+
+
+
+
         )
     )
 })
+const FrameworkAside = new Component({}, document.body, () => {
+  return createElement(
+    "aside",
+    { class: "learn" },
 
+    createElement(
+      "header",
+      {},
+      createElement("h3", {}, "mini-framework"),
+      createElement(
+        "span",
+        { class: "source-links" },
+        createElement("h5", {}, "Source Code"),
+        createElement(
+          "a",
+          { href: "https://learn.zone01oujda.ma/git/ahssaini/mini-framework" },
+          "Git Repository"
+        )
+      )
+    ),
+
+    createElement("hr", {}),
+
+    createElement(
+      "blockquote",
+      { class: "quote speech-bubble" },
+      createElement(
+        "p",
+        {},
+        "A lightweight JavaScript framework that handles DOM abstraction, routing, state management, and event delegation — fully implemented from scratch without relying on any external libraries."
+      ),
+      createElement(
+        "footer",
+        {},
+        createElement("strong", {}, "Created by Zone01 students")
+      )
+    ),
+
+    createElement("hr", {}),
+
+    createElement("h4", {}, "Collaborators"),
+    createElement(
+      "ul",
+      {},
+      ["abelbach", "asebbar", "ahssaini", "kelali"].map(name =>
+        createElement("li", {}, name)
+      )
+    ),
+
+    createElement("h4", {}, "Tech Stack"),
+    createElement(
+      "ul",
+      {},
+      createElement("li", {}, "JavaScript — 145 kB"),
+      createElement("li", {}, "JS: 50%"),
+      createElement("li", {}, "CSS: 40%"),
+      createElement("li", {}, "HTML: 55%")
+    ),
+
+    createElement("h4", {}, "Project Goals"),
+    createElement(
+      "ul",
+      {},
+      createElement("li", {}, "Build a custom JavaScript framework from scratch."),
+      createElement("li", {}, "No usage of libraries like React, Vue, Angular."),
+      createElement("li", {}, "Make a working TodoMVC using our own framework.")
+    ),
+
+    createElement("h4", {}, "Framework Features"),
+    createElement(
+      "ul",
+      {},
+      createElement("li", {}, "✅ DOM Abstraction using virtual elements"),
+      createElement("li", {}, "✅ State management via reactive stores"),
+      createElement("li", {}, "✅ Event delegation system without addEventListener"),
+      createElement("li", {}, "✅ Basic Router to sync URL with app state")
+    ),
+
+    createElement("h4", {}, "Documentation Includes"),
+    createElement(
+      "ul",
+      {},
+      createElement("li", {}, "Creating elements"),
+      createElement("li", {}, "Binding events dynamically"),
+      createElement("li", {}, "Nesting virtual DOM nodes"),
+      createElement("li", {}, "Attribute and class handling"),
+      createElement("li", {}, "Updating UI via state changes"),
+      createElement("li", {}, "Custom routing strategy")
+    ),
+
+    createElement("h4", {}, "Learning Outcomes"),
+    createElement(
+      "ul",
+      {},
+      createElement("li", {}, "Web Framework Architecture"),
+      createElement("li", {}, "Virtual DOM & Reconciliation"),
+      createElement("li", {}, "State & Event Systems"),
+      createElement("li", {}, "Routing & SPA Concepts")
+    ),
+
+    createElement(
+      "footer",
+      {},
+      createElement("hr", {}),
+      createElement(
+        "em",
+        {},
+        "This project demonstrates how to build modern app architecture using only native JS. ",
+        "It's designed for learning, exploration, and performance."
+      )
+    )
+  );
+});
 
 const router1 = new Router("/", Todo, NotFoundView, root, Pathsetter)
 router1.AddPath("/completed", Todo)
