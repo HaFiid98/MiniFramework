@@ -33,6 +33,7 @@ class eventmanager {
       if (typeof this.orblur === 'function') {
         this.orblur(e); 
       }
+
       this.trigger('blur', e); 
     };
   }
@@ -62,12 +63,24 @@ class eventmanager {
       (h) => h.selector !== selector || h.handler.toString() !== handler.toString()
     );
   }
+  clearevent(){
+    this.handlers = {
+      click: [],
+      dblclick: [],
+      scroll: [],
+      change: [],
+      keydown: [],
+      blur: []
+    }
+  }
 
   trigger(type, e) {
     if (!this.handlers[type]) return;
     for (const { selector, handler } of this.handlers[type]) {
       try {
         if (!selector) {
+          console.log("eveeeeeeeeents", e);
+          
           handler(e);
         }
         else if (e.target.matches(selector)) {

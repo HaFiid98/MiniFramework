@@ -3,6 +3,7 @@ export class Router {
         this.root = root
         this.pathsetter = pathsetter
         this.routes = new Map()
+        this.DefaultPath = DefaultPath
         this.AddPath(DefaultPath, DefaultView)
         this.AddPath(404, NotFoundView)
         this.ListenTohash()
@@ -14,14 +15,18 @@ export class Router {
 
         window.addEventListener("hashchange", (e) => {
 
-            console.log("the hash changed")
+            console.log("the hash changed" , this.GetCurrentPath())
             e.preventDefault()
-            this.pathsetter(this.GetCurrentPath())
-            
-            
-            
-            this.RenderView(this.GetCurrentPath())
-            
+            console.log("paathseer" , this.pathsetter);
+            if(this.GetCurrentPath().length > 0) {
+
+              this.pathsetter(this.GetCurrentPath())
+                this.RenderView(this.GetCurrentPath())
+                
+            }
+
+     
+
         })
 
     }
@@ -31,23 +36,14 @@ export class Router {
     }
 
     RenderView(Path) {
-        console.log(Path);
+        console.log(Path, "paaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
         console.log(this.routes);
+        const viewFn = this.routes.get(Path) || this.routes.get(this.DefaultPath);
+ 
 
-        const viewFn = this.routes.get(Path);
-        // console.log("heeelo" ,viewFn);
-
-
-        // if (typeof viewFn === "function" ){
-
-        //     this.root.innerHTML = viewFn();
-        // }else{
-        // }
-
-        this.root.innerHTML = ""
         console.log(viewFn, "thiiiiiiiiis vuewwwwww");
 
-        viewFn.render()
+        viewFn.update()
     }
 
     AddPath(Path, View) {
@@ -57,7 +53,7 @@ export class Router {
     }
 
     GetCurrentPath() {
-        return location.hash.slice(1);
+        return location.hash
     }
 }
 
