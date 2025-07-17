@@ -37,7 +37,7 @@ export class Router {
 
     RenderView(Path) {
         console.log(Path, "paaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        console.log(this.routes);
+        console.log(this.routes , "pathseeeter" , this.pathsetter);
         const viewFn = this.routes.get(Path) || this.routes.get(this.DefaultPath);
  
 

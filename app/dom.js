@@ -136,6 +136,7 @@ export function patch(parent, patches, index = 0) {
     parent.appendChild(render(patches.node, null));
     return 0;
   }
+
   // REPLACE NODE IF TAG CHANGED
   if (
     patches.node &&
@@ -147,7 +148,7 @@ export function patch(parent, patches, index = 0) {
     return 0;
   }
 
-
+  // Update attributes
   if (patches.attrPatches) {
     const element = parent.childNodes[index];
     for (const [k, val] of Object.entries(patches.attrPatches)) {
@@ -162,64 +163,76 @@ export function patch(parent, patches, index = 0) {
       } else {
         element.setAttribute(k, val);
       }
-
     }
   }
 
+  // Handle children
   if (patches.childPatches) {
     const childNode = parent.childNodes[index];
     const patchesChildren = patches.childPatches;
 
-    // Detect if keyed patching is possible
     const isKeyed = patchesChildren.length > 0 && patchesChildren.every(p => p?.node?.attrs?.key != null);
 
     if (isKeyed) {
-      // Map existing DOM children by __key
       const existingChildren = Array.from(childNode.childNodes);
       const keyedDOM = new Map();
-      existingChildren.forEach(el => {
-        if (el.__key != null) keyedDOM.set(el.__key, el);
-      });
 
-      // Build new list and patch or insert accordingly
-      patchesChildren.forEach(patchData => {
-        const key = patchData?.node?.attrs?.key;
-        if (key != null) {
-          const existingEl = keyedDOM.get(key);
-          if (existingEl) {
-            patch(childNode, patchData, Array.from(childNode.childNodes).indexOf(existingEl));
-            keyedDOM.delete(key);
-          } else {
-            // Insert new element for this key
-            const newEl = render(patchData.node, null);
-            newEl.__key = key;
-            childNode.appendChild(newEl);
-          }
+      // Build current DOM map by key
+      existingChildren.forEach(el => {
+        if (el.__key != null) {
+          keyedDOM.set(el.__key, el);
         }
       });
 
-      // Remove leftover elements that are not in new patch
-      for (const leftoverEl of keyedDOM.values()) {
-        childNode.removeChild(leftoverEl);
+      // Build a new ordered list of nodes
+      const newChildren = [];
+
+      patchesChildren.forEach(patchData => {
+        const key = patchData?.node?.attrs?.key;
+        if (!key) return;
+
+        const existingEl = keyedDOM.get(key);
+        if (existingEl) {
+          const existingIndex = Array.from(childNode.childNodes).indexOf(existingEl);
+          patch(childNode, patchData, existingIndex);
+          keyedDOM.delete(key);
+          newChildren.push(existingEl);
+        } else {
+          const newEl = render(patchData.node, null);
+          newEl.__key = key;
+          newChildren.push(newEl);
+        }
+      });
+
+      // Reorder DOM to match newChildren
+      newChildren.forEach((el, i) => {
+        const current = childNode.childNodes[i];
+        if (current !== el) {
+          childNode.insertBefore(el, current || null);
+        }
+      });
+
+      // Remove any leftover DOM nodes not present in newChildren
+      for (const leftover of keyedDOM.values()) {
+        childNode.removeChild(leftover);
       }
 
     } else {
       // Non-keyed patch (by index)
       let j = 0;
       for (let i = 0; i < patchesChildren.length; i++) {
-        track = patch(childNode, patchesChildren[i], j);
-        if (track === 1) {
+        const result = patch(childNode, patchesChildren[i], j);
+        if (result === 1) {
           j--;
-          track = -1;
         }
         j++;
       }
     }
   }
 
-  // Update text content if node is string or number and changed
+  // Update text content if it's a text node
   if ((typeof patches.node === 'string' || typeof patches.node === 'number') &&
-    parent.childNodes[index].textContent !== patches.node) {
+      parent.childNodes[index].textContent !== patches.node) {
     parent.childNodes[index].textContent = patches.node;
   }
 

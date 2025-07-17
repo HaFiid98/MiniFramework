@@ -5,11 +5,11 @@ import { Router } from '../app/router.js'
 import { Component, useState } from "../app/state.js"
 import { eventManager } from "../app/events.js"
 function App() {
-  const paths =   ["#/", "#/active", "#/completed"]
+  const paths = ["#/", "#/active", "#/completed"]
   const root = document.getElementById("root")
   let Pathsetter = null
   const Todo = new Component({}, root, () => {
-    const [currentPath, SetcurrentPath, _ , unsub] = useState(location.hash)
+    const [currentPath, SetcurrentPath, _, unsub] = useState(location.hash)
 
     console.log(currentPath());
 
@@ -18,10 +18,10 @@ function App() {
     }
 
 
-    if (!paths.includes(currentPath()) && !currentPath().startsWith(paths[0]) && currentPath() !== ""){
+    if (!paths.includes(currentPath()) && !currentPath().startsWith(paths[0]) && currentPath() !== "") {
       console.log("lkhwaaaaaaaaaaaa");
-      
-      return createElement("p"  , {} , "")  
+
+      return createElement("p", {}, "")
     }
     const [Todo, SetTodo] = useState([])
 
@@ -43,24 +43,24 @@ function App() {
       }
     });
     eventManager.addevent("click", "", (e) => {
-      if (!document.querySelector(".input-container")) return;
 
-      const isClickInside = e.target.closest(".input-container");
+      const isEditInput = e.target.classList.contains("new-todo")
+      const isMainInput = e.target.classList.contains("edit-todo")
 
-      if (!isClickInside && Todo().some(todo => todo.db)) {
+      if ((!isMainInput || isEditInput)  && Todo().some(todo => todo.db)) {
         SetTodo(prev =>
           prev.map(todo => ({ ...todo, db: false }))
         );
       }
+   
     });
- 
-      eventManager.addevent("blur", () => {
-        SetTodo(prev => {
-          return prev.map(todo => { return { ...todo, db: false } })
-        })
-      })
 
-        console.log(eventManager.handlers,"haaaaaaaaaaaaaaaaaaaaaaaaaandlersswssss")
+    eventManager.addevent("blur", () => {
+      SetTodo(prev => {
+        return prev.map(todo => { return { ...todo, db: false } })
+      })
+    })
+
 
     eventManager.addevent("dblclick", 'label', (e) => {
       console.log("eveeeeeeeeeeeent");
@@ -100,8 +100,8 @@ function App() {
       })
 
     });
-    const filterTodo = currentPath() === "/completed" ? Todo().filter(item => item.complete == true) :
-      currentPath() === "/active" ? Todo().filter(item => item.complete == false) :
+    const filterTodo = currentPath() === "#/completed" ? Todo().filter(item => item.complete == true) :
+      currentPath() === "#/active" ? Todo().filter(item => item.complete == false) :
         Todo()
 
 
@@ -146,7 +146,7 @@ function App() {
 
 
     return (
- createElement(
+      createElement(
         "container",
         { class: "container" },
 
@@ -181,7 +181,7 @@ function App() {
                     createElement("div", { class: "view" },
                       createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
                         createElement("input", {
-                          id: "edit", key: Task.id, 'data-input': "input", class: "edit-todo new-todo", type: "text", value: Task.content, autofocus: true
+                          id: "edit", key: Task.id, 'data-input': "input", class: "edit edit-todo new-todo", type: "text", value: Task.content, autofocus: true
 
                         }, "inputing"))))))
               }
@@ -192,7 +192,7 @@ function App() {
           createElement("ul", { class: "filters" },
             createElement("span", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
 
-          paths.map(path => {
+            paths.map(path => {
               const attrs = currentPath() === path.slice(1) ? { href: path, 'data-path': "path", class: "selected" } :
                 { href: path, 'data-path': "path" }
               return createElement("li", {}, createElement("a", attrs, path === "#/" ? "All" : path.slice(2).slice(0, 1).toUpperCase().concat(path.slice(3))))
@@ -209,7 +209,7 @@ function App() {
 
 
 
-      ) 
+      )
     )
   })
   const FrameworkAside = new Component({}, document.body, () => {
