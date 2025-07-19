@@ -181,7 +181,7 @@ function App() {
                     createElement("div", { class: "view" },
                       createElement("div", { class: "input-container", onClick: (e) => e.stopPropagation() },
                         createElement("input", {
-                          id: "edit", key: Task.id, 'data-input': "input", class: "edit edit-todo new-todo", type: "text", value: Task.content, autofocus: true
+                          id: "edit", key: Task.id, 'data-input': "input", class: "edit edit-todo new-todo", type: "text", value: Task.content//, autofocus: true
 
                         }, "inputing"))))))
               }

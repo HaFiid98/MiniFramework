@@ -8,7 +8,8 @@ class eventmanager {
       scroll: [],     
       change: [],     
       keydown: [],
-            blur:[] 
+            blur:[],
+      hashchange:[]
   
     };
 
@@ -26,14 +27,21 @@ class eventmanager {
     this.observeInputChanges();
     this.startKeyListener();
         this.bluuur();
+    this.hashch();
 
   }
+
+
+
+    hashch(){
+
+    window.onhashchange = (e) => {
+      this.trigger('hashchange',e)
+    }
+  }
+
     bluuur() {
     window.onblur = (e) => {
-      if (typeof this.orblur === 'function') {
-        this.orblur(e); 
-      }
-
       this.trigger('blur', e); 
     };
   }
@@ -128,7 +136,6 @@ class eventmanager {
           this.trigger('click', e);
 
           this.lastclick = 0;
-          // console.log(this.lastclick , "laaaastclick");
           
         }, this.delayfordbclick);
       }
@@ -165,6 +172,7 @@ class eventmanager {
     }
   }, 200);
 }
+
   observeInputChanges() {
   const addInputs = (root) => {
     const found = root.querySelectorAll('input, textarea, select');

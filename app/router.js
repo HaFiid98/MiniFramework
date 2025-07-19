@@ -1,3 +1,5 @@
+import { eventManager } from "./events.js"
+
 export class Router {
     constructor(DefaultPath, DefaultView, NotFoundView, root , pathsetter) {
         this.root = root
@@ -13,19 +15,17 @@ export class Router {
 
     ListenTohash() {
 
-        window.addEventListener("hashchange", (e) => {
+        eventManager.addevent("hashchange", (e) => {
 
             console.log("the hash changed" , this.GetCurrentPath())
             e.preventDefault()
-            console.log("paathseer" , this.pathsetter);
+            // console.log("paathseer" , this.pathsetter);
             if(this.GetCurrentPath().length > 0) {
 
               this.pathsetter(this.GetCurrentPath())
                 this.RenderView(this.GetCurrentPath())
                 
             }
-
-     
 
         })
 
