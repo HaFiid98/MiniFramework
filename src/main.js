@@ -118,7 +118,7 @@ function App() {
     eventManager.addevent("keydown", '[data-input="input"]', (e) => {
 
       if (e.key === "Enter" || (e.key === "Tab")) {
-        if (e.target.value !== "" && e.target.value.length >= 2) {
+        if (e.target.value.trim() !== "" && (e.target.value.trim()).length >= 2) {
 
           if (e.target.classList.contains("edit-todo")) {
             const key = e.target.getAttribute("key")

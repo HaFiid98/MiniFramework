@@ -22,6 +22,7 @@ class eventmanager {
     this.delayfordbclick = 300;
 
     this.overrideHandlers();
+    // this.startScrollPolling();
     this.startChangePolling();
     this.observeInputChanges();
     this.startKeyListener();
@@ -86,6 +87,7 @@ class eventmanager {
     for (const { selector, handler } of this.handlers[type]) {
       try {
         if (!selector) {
+          // console.log("eveeeeeeeeents", e);
 
           handler(e);
         }
@@ -98,6 +100,23 @@ class eventmanager {
     }
   }
 
+  //  startScrollPolling() {
+  //   setInterval(() => {
+  //     const currY = window.scrollY;
+  //     if (currY !== this.lastscp) {
+  //       this.lastscp = currY;
+  //       this.trigger('scroll', { scrollY: currY });
+  //     }
+  //   }, 100);
+  // }
+
+  // overrideHandlers() {
+  //   const originalClick = document.onclick;
+  //   document.onclick = (e) => {
+  //     if (typeof originalClick === 'function') originalClick(e);
+  //     this.trigger('click', e);
+  //   };
+  // }
 
   overrideHandlers() {
     const originalClick = document.onclick;
@@ -105,8 +124,7 @@ class eventmanager {
     document.onclick = (e) => {
       if (typeof originalClick === 'function') originalClick(e);
       const now = Date.now();
-
-      if (now - this.lastclick < this.delayfordbclick) {
+      if (now - this.lastclick < this.delayfordbclick && !this.handlers['click'].map(handler => handler.selector).filter(sel => sel !== null && sel !== "").some(sel => e.target.matches(sel))) {
         clearTimeout(this.clicktimeout);
         this.trigger('dblclick', e);
         this.lastclick = 0;
