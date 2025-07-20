@@ -141,7 +141,7 @@ function App() {
         createElement("header", { class: "header" },
           createElement("h1", {}, "todoMVC"),
           createElement("div", { class: "input-container" },
-            createElement("input", { class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
+            createElement("input", { id:"todo-input" ,  class: "new-todo", 'data-input': 'input', placeholder: "What needs to be done?" }),
             createElement("label", { class: "visually-hidden", for: "todo-input" }, "todo Input")
 
           ),
