@@ -1,7 +1,7 @@
 import { eventManager } from "./events.js"
 
 export class Router {
-    constructor(DefaultPath, DefaultView, NotFoundView, root , pathsetter) {
+    constructor(DefaultPath, DefaultView, NotFoundView, root, pathsetter) {
         this.root = root
         this.pathsetter = pathsetter
         this.routes = new Map()
@@ -16,40 +16,23 @@ export class Router {
     ListenTohash() {
 
         eventManager.addevent("hashchange", (e) => {
-
-            console.log("the hash changed" , this.GetCurrentPath())
             e.preventDefault()
-            // console.log("paathseer" , this.pathsetter);
-            if(this.GetCurrentPath().length > 0) {
-
-              this.pathsetter(this.GetCurrentPath())
+            if (this.GetCurrentPath().length > 0) {
+                this.pathsetter(this.GetCurrentPath())
                 this.RenderView(this.GetCurrentPath())
-                
             }
 
         })
-
     }
-    Navigate(Path) {
-        location.hash = Path;
 
-    }
 
     RenderView(Path) {
-        console.log(Path, "paaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        console.log(this.routes , "pathseeeter" , this.pathsetter);
         const viewFn = this.routes.get(Path) || this.routes.get(this.DefaultPath);
- 
-
-        console.log(viewFn, "thiiiiiiiiis vuewwwwww");
-
         viewFn.update()
     }
 
     AddPath(Path, View) {
         this.routes.set(Path, View)
-        console.log(this.routes);
-
     }
 
     GetCurrentPath() {
@@ -57,6 +40,3 @@ export class Router {
     }
 }
 
-
-// const root = document.getElementById("root")
-// console.log(HomeView());

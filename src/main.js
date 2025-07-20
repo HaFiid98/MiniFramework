@@ -11,7 +11,6 @@ function App() {
   const Todo = new Component({}, root, () => {
     const [currentPath, SetcurrentPath, _, unsub] = useState(location.hash)
 
-    console.log(currentPath());
 
     if (!Pathsetter) {
       Pathsetter = SetcurrentPath
@@ -19,17 +18,11 @@ function App() {
 
 
     if (!paths.includes(currentPath()) && !currentPath().startsWith(paths[0]) && currentPath() !== "") {
-      console.log("lkhwaaaaaaaaaaaa");
 
       return createElement("p", {}, "")
     }
     const [Todo, SetTodo] = useState([])
 
-    // console.log(Todo(), "fsdfsdfdsfdsfsdfsdfsdfs");
-    // eventManager.addevent("click", '[data-click="todo-add"]', (e) => {
-
-    //     SetTodo([...(Todo()), "hsdfhksfkdsjf"])
-    // });
 
 
     const HandleDestroy = (id) => { SetTodo(prev => prev.filter(todo => todo.id !== id)) }
@@ -63,7 +56,6 @@ function App() {
 
 
     eventManager.addevent("dblclick", 'label', (e) => {
-      console.log("eveeeeeeeeeeeent");
       if (e.target.hasAttribute('data-label')) {
 
         const id = parseInt(e.target.getAttribute('data-label'));
@@ -106,9 +98,7 @@ function App() {
 
 
     eventManager.addevent("click", '.toggle-all', (e) => {
-      // e.stopPropagation()
-      // e.preventDefault()
-      console.log("eveeeeeeeeent trigerred");
+
       e.preventDefault()
       const keys = filterTodo.map(todo => todo.id)
       const fullyCheckedUncheked = filterTodo.every(todo => todo.complete) || filterTodo.every(todo => !todo.complete)
@@ -126,11 +116,9 @@ function App() {
 
     })
     eventManager.addevent("keydown", '[data-input="input"]', (e) => {
-      console.log("keeeeeeeeeey", e.key);
 
       if (e.key === "Enter" || (e.key === "Tab")) {
         if (e.target.value !== "" && e.target.value.length >= 2) {
-          // console.log( "iddd :  " , e.target.getAttribute("id")  ,"keeeey : ", e.target.getAttribute("key")  , "taaarget : " ,  e.target);
 
           if (e.target.classList.contains("edit-todo")) {
             const key = e.target.getAttribute("key")
@@ -193,7 +181,8 @@ function App() {
             createElement("span", { class: "todo-count", }, `${Todo().filter(Task => !Task.complete).length} items left!`),
 
             paths.map(path => {
-              const attrs = currentPath() === path.slice(1) ? { href: path, 'data-path': "path", class: "selected" } :
+              
+              const attrs = currentPath() == path ? { href: path, 'data-path': "path", class: "selected" } :
                 { href: path, 'data-path': "path" }
               return createElement("li", {}, createElement("a", attrs, path === "#/" ? "All" : path.slice(2).slice(0, 1).toUpperCase().concat(path.slice(3))))
 
